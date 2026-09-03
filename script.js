@@ -4,11 +4,10 @@ const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
 const newChatButton = document.getElementById("newChatButton");
 
-let messages = JSON.parse(localStorage.getItem("safiAI_messages")) || [];
+const SERVER_URL = "DEINE-RENDER-URL";
 
-function saveMessages() {
-  localStorage.setItem("safiAI_messages", JSON.stringify(messages));
-}
+let messages = [];
+let previousInteractionId = null;
 
 function addMessage(text, sender) {
   const message = document.createElement("div");
@@ -27,11 +26,15 @@ function addMessage(text, sender) {
 
   chat.appendChild(message);
 
-  chat.scrollTop = chat.scrollHeight;
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth"
+  });
 }
 
 function showTyping() {
   const typing = document.createElement("div");
+
   typing.className = "message";
   typing.id = "typing";
 
@@ -47,7 +50,11 @@ function showTyping() {
   `;
 
   chat.appendChild(typing);
-  chat.scrollTop = chat.scrollHeight;
+
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth"
+  });
 }
 
 function removeTyping() {
@@ -58,73 +65,10 @@ function removeTyping() {
   }
 }
 
-function getAIResponse(text) {
-  const message = text.toLowerCase();
-
-  if (
-    message.includes("hallo") ||
-    message.includes("hi") ||
-    message.includes("hey")
-  ) {
-    return "Hey! 👋 Ich bin Safi AI. Wie kann ich dir helfen?";
-  }
-
-  if (
-    message.includes("wer bist du") ||
-    message.includes("was bist du")
-  ) {
-    return "Ich bin Safi AI 🤖 – dein persönlicher KI-Assistent.";
-  }
-
-  if (
-    message.includes("programmieren") ||
-    message.includes("javascript") ||
-    message.includes("html") ||
-    message.includes("css") ||
-    message.includes("code")
-  ) {
-    return "Klar! 💻 Ich kann dir beim Programmieren helfen. Sag mir einfach, was du bauen möchtest.";
-  }
-
-  if (
-    message.includes("spiel") ||
-    message.includes("game")
-  ) {
-    return "🎮 Eine Spielidee wäre zum Beispiel ein kleines PvP-Spiel mit Spielern, Bots, verschiedenen Waffen und Maps.";
-  }
-
-  if (
-    message.includes("mathe") ||
-    message.includes("mathematik") ||
-    message.includes("rechnung")
-  ) {
-    return "🧮 Klar! Schick mir deine Matheaufgabe und ich erkläre dir den Rechenweg Schritt für Schritt.";
-  }
-
-  if (
-    message.includes("übersetz") ||
-    message.includes("translate") ||
-    message.includes("englisch")
-  ) {
-    return "🌎 Klar! Schick mir den Text und sag mir, in welche Sprache du ihn übersetzen möchtest.";
-  }
-
-  if (
-    message.includes("danke") ||
-    message.includes("thx")
-  ) {
-    return "Gerne! 😎";
-  }
-
-  return "Ich bin gerade noch eine Demo-Version von Safi AI. 🤖 Du kannst mir trotzdem Fragen stellen – später können wir eine echte KI anschließen.";
-}
-
-function sendMessage(text = null) {
+async function sendMessage(text = null) {
   const message = text || messageInput.value.trim();
 
-  if (!message) {
-    return;
-  }
+  if (!message) return;
 
   const welcome = document.getElementById("welcome");
 
@@ -134,32 +78,53 @@ function sendMessage(text = null) {
 
   addMessage(message, "user");
 
-  messages.push({
-    text: message,
-    sender: "user"
-  });
-
-  saveMessages();
-
   messageInput.value = "";
   messageInput.style.height = "auto";
 
+  sendButton.disabled = true;
+
   showTyping();
 
-  setTimeout(() => {
-    removeTyping();
+  try {
+    const response = await fetch(`${SERVER_URL}/chat`, {
+      method: "POST",
 
-    const response = getAIResponse(message);
+      headers: {
+        "Content-Type": "application/json"
+      },
 
-    addMessage(response, "ai");
-
-    messages.push({
-      text: response,
-      sender: "ai"
+      body: JSON.stringify({
+        message: message,
+        previousInteractionId: previousInteractionId
+      })
     });
 
-    saveMessages();
-  }, 700);
+    const data = await response.json();
+
+    removeTyping();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Serverfehler");
+    }
+
+    addMessage(data.reply, "ai");
+
+    previousInteractionId = data.interactionId;
+
+  } catch (error) {
+    removeTyping();
+
+    console.error(error);
+
+    addMessage(
+      "❌ Ich konnte den KI-Server gerade nicht erreichen. Bitte versuche es gleich noch einmal.",
+      "ai"
+    );
+  }
+
+  sendButton.disabled = false;
+
+  messageInput.focus();
 }
 
 sendButton.addEventListener("click", () => {
@@ -175,6 +140,7 @@ messageInput.addEventListener("keydown", (event) => {
 
 messageInput.addEventListener("input", () => {
   messageInput.style.height = "auto";
+
   messageInput.style.height =
     Math.min(messageInput.scrollHeight, 150) + "px";
 });
@@ -186,33 +152,15 @@ document.querySelectorAll(".suggestion").forEach((button) => {
 });
 
 clearButton.addEventListener("click", () => {
-  localStorage.removeItem("safiAI_messages");
   messages = [];
+  previousInteractionId = null;
 
   location.reload();
 });
 
 newChatButton.addEventListener("click", () => {
-  localStorage.removeItem("safiAI_messages");
   messages = [];
+  previousInteractionId = null;
 
   location.reload();
 });
-
-function loadMessages() {
-  if (messages.length === 0) {
-    return;
-  }
-
-  const welcome = document.getElementById("welcome");
-
-  if (welcome) {
-    welcome.remove();
-  }
-
-  messages.forEach((message) => {
-    addMessage(message.text, message.sender);
-  });
-}
-
-loadMessages();
