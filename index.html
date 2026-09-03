@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safi AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- Seitenleiste -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">S</div>
+        <span>Safi AI</span>
+      </div>
+
+      <button id="newChatButton" class="new-chat">
+        ＋ Neue Unterhaltung
+      </button>
+
+      <div class="sidebar-bottom">
+        <button id="clearButton" class="clear-button">
+          🗑 Chat löschen
+        </button>
+      </div>
+    </aside>
+
+    <!-- Hauptbereich -->
+    <main class="main">
+
+      <header class="topbar">
+        <div class="mobile-logo">
+          <div class="logo-icon">S</div>
+          <span>Safi AI</span>
+        </div>
+      </header>
+
+      <!-- Chat -->
+      <section id="chat" class="chat">
+
+        <div id="welcome" class="welcome">
+          <div class="welcome-icon">✦</div>
+
+          <h1>Wie kann ich dir helfen?</h1>
+
+          <p>
+            Ich bin Safi AI – dein persönlicher KI-Assistent.
+          </p>
+
+          <div class="suggestions">
+
+            <button class="suggestion">
+              💻 Hilf mir beim Programmieren
+            </button>
+
+            <button class="suggestion">
+              🎮 Erstelle eine Spielidee
+            </button>
+
+            <button class="suggestion">
+              🧮 Erkläre mir Mathematik
+            </button>
+
+            <button class="suggestion">
+              🌎 Übersetze einen Text
+            </button>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Eingabebereich -->
+      <div class="input-area">
+
+        <div class="input-box">
+
+          <textarea
+            id="messageInput"
+            placeholder="Schreibe eine Nachricht..."
+            rows="1"
+          ></textarea>
+
+          <button id="sendButton" class="send-button">
+            ➤
+          </button>
+
+        </div>
+
+        <p class="disclaimer">
+          Safi AI kann Fehler machen. Überprüfe wichtige Informationen.
+        </p>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
