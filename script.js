@@ -1,3 +1,12 @@
+// ============================================
+// SAFI AI – SCRIPT
+// ============================================
+
+// DEINE RENDER-URL HIER EINTRAGEN
+const SERVER_URL = "https://DEIN-SAFI-AI-SERVER.onrender.com";
+
+
+// Elemente
 const chat = document.getElementById("chat");
 const messageInput = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
@@ -21,303 +30,323 @@ const switchAuth = document.getElementById("switchAuth");
 const switchText = document.getElementById("switchText");
 
 const registerNameContainer =
-  document.getElementById("registerNameContainer");
+    document.getElementById("registerNameContainer");
 
 const registerName =
-  document.getElementById("registerName");
+    document.getElementById("registerName");
 
 const email =
-  document.getElementById("email");
+    document.getElementById("email");
 
 const password =
-  document.getElementById("password");
+    document.getElementById("password");
 
 const themeButton =
-  document.getElementById("themeButton");
+    document.getElementById("themeButton");
 
 
-// =====================================================
-// DEINE RENDER SERVER URL
-// =====================================================
-
-const SERVER_URL = "DEINE-RENDER-URL";
-
-
-// =====================================================
-// CHAT
-// =====================================================
+// ============================================
+// CHAT MEMORY
+// ============================================
 
 let previousInteractionId = null;
 
 
+// ============================================
+// NACHRICHT ANZEIGEN
+// ============================================
+
 function addMessage(text, sender) {
 
-  const message = document.createElement("div");
+    const message = document.createElement("div");
 
-  message.className = `message ${sender}`;
+    message.className = `message ${sender}`;
 
-  const avatar = document.createElement("div");
+    const avatar = document.createElement("div");
 
-  avatar.className = "message-avatar";
+    avatar.className = "message-avatar";
 
-  avatar.textContent =
-    sender === "user"
-      ? "Du"
-      : "S";
+    avatar.textContent =
+        sender === "user" ? "Du" : "S";
 
-  const content = document.createElement("div");
+    const content = document.createElement("div");
 
-  content.className = "message-content";
+    content.className = "message-content";
 
-  content.textContent = text;
+    content.textContent = text;
 
-  message.appendChild(avatar);
+    message.appendChild(avatar);
+    message.appendChild(content);
 
-  message.appendChild(content);
+    chat.appendChild(message);
 
-  chat.appendChild(message);
-
-  chat.scrollTop = chat.scrollHeight;
+    chat.scrollTop = chat.scrollHeight;
 }
 
 
+// ============================================
+// SCHREIB-ANIMATION
+// ============================================
+
 function showTyping() {
 
-  const typing = document.createElement("div");
+    const typing = document.createElement("div");
 
-  typing.className = "message";
+    typing.className = "message";
+    typing.id = "typing";
 
-  typing.id = "typing";
+    typing.innerHTML = `
+        <div class="message-avatar">S</div>
 
-  typing.innerHTML = `
-    <div class="message-avatar">S</div>
+        <div class="message-content">
 
-    <div class="message-content">
+            <div class="typing">
 
-      <div class="typing">
+                <span></span>
+                <span></span>
+                <span></span>
 
-        <span></span>
-        <span></span>
-        <span></span>
+            </div>
 
-      </div>
+        </div>
+    `;
 
-    </div>
-  `;
+    chat.appendChild(typing);
 
-  chat.appendChild(typing);
-
-  chat.scrollTop = chat.scrollHeight;
+    chat.scrollTop = chat.scrollHeight;
 }
 
 
 function removeTyping() {
 
-  const typing =
-    document.getElementById("typing");
+    const typing =
+        document.getElementById("typing");
 
-  if (typing) {
-    typing.remove();
-  }
+    if (typing) {
+        typing.remove();
+    }
 }
 
 
-// =====================================================
-// SEND MESSAGE
-// =====================================================
+// ============================================
+// NACHRICHT SENDEN
+// ============================================
 
 async function sendMessage(text = null) {
 
-  const message =
-    text || messageInput.value.trim();
+    const message =
+        text || messageInput.value.trim();
 
-  if (!message) return;
-
-
-  const welcome =
-    document.getElementById("welcome");
-
-  if (welcome) {
-    welcome.remove();
-  }
-
-
-  addMessage(message, "user");
-
-
-  messageInput.value = "";
-
-  messageInput.style.height = "auto";
-
-  sendButton.disabled = true;
-
-  showTyping();
-
-
-  try {
-
-    const response = await fetch(
-      `${SERVER_URL}/chat`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-          message: message,
-          previousInteractionId:
-            previousInteractionId
-        })
-      }
-    );
-
-
-    const data = await response.json();
-
-
-    removeTyping();
-
-
-    if (!response.ok) {
-      throw new Error(
-        data.error || "Serverfehler"
-      );
+    if (!message) {
+        return;
     }
 
 
-    addMessage(
-      data.reply,
-      "ai"
-    );
+    // Willkommen entfernen
+    const welcome =
+        document.getElementById("welcome");
+
+    if (welcome) {
+        welcome.remove();
+    }
 
 
-    previousInteractionId =
-      data.interactionId;
+    // Nutzer-Nachricht
+    addMessage(message, "user");
 
 
-  } catch (error) {
+    // Eingabe löschen
+    messageInput.value = "";
 
-    removeTyping();
-
-    console.error(error);
-
-
-    addMessage(
-      "❌ Safi AI konnte gerade keine Verbindung zum Server herstellen.",
-      "ai"
-    );
-
-  }
+    messageInput.style.height = "auto";
 
 
-  sendButton.disabled = false;
+    // Button deaktivieren
+    sendButton.disabled = true;
 
-  messageInput.focus();
+
+    // Schreibanimation
+    showTyping();
+
+
+    try {
+
+        const response = await fetch(
+            `${SERVER_URL}/chat`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    message: message,
+
+                    previousInteractionId:
+                        previousInteractionId
+
+                })
+            }
+        );
+
+
+        const data =
+            await response.json();
+
+
+        removeTyping();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Serverfehler"
+            );
+
+        }
+
+
+        // KI-Antwort
+        addMessage(
+            data.reply,
+            "ai"
+        );
+
+
+        // Unterhaltung merken
+        previousInteractionId =
+            data.interactionId;
+
+
+    } catch (error) {
+
+        console.error(
+            "Safi AI Fehler:",
+            error
+        );
+
+
+        removeTyping();
+
+
+        addMessage(
+            "❌ Safi AI konnte gerade keine Verbindung herstellen. Bitte versuche es gleich noch einmal.",
+            "ai"
+        );
+
+    }
+
+
+    sendButton.disabled = false;
+
+    messageInput.focus();
 }
 
 
-// =====================================================
-// SEND BUTTON
-// =====================================================
+// ============================================
+// SENDEN BUTTON
+// ============================================
 
 sendButton.addEventListener(
-  "click",
-  () => {
-    sendMessage();
-  }
-);
-
-
-// =====================================================
-// ENTER
-// =====================================================
-
-messageInput.addEventListener(
-  "keydown",
-  (event) => {
-
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey
-    ) {
-
-      event.preventDefault();
-
-      sendMessage();
+    "click",
+    () => {
+        sendMessage();
     }
-
-  }
 );
 
 
-// =====================================================
-// TEXTAREA AUTO SIZE
-// =====================================================
+// ============================================
+// ENTER SENDEN
+// ============================================
 
 messageInput.addEventListener(
-  "input",
-  () => {
+    "keydown",
+    (event) => {
 
-    messageInput.style.height =
-      "auto";
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
 
-    messageInput.style.height =
-      Math.min(
-        messageInput.scrollHeight,
-        150
-      ) + "px";
+            event.preventDefault();
 
-  }
+            sendMessage();
+
+        }
+
+    }
 );
 
 
-// =====================================================
-// SUGGESTIONS
-// =====================================================
+// ============================================
+// TEXTFELD AUTOMATISCH VERGRÖSSERN
+// ============================================
+
+messageInput.addEventListener(
+    "input",
+    () => {
+
+        messageInput.style.height =
+            "auto";
+
+        messageInput.style.height =
+            Math.min(
+                messageInput.scrollHeight,
+                150
+            ) + "px";
+
+    }
+);
+
+
+// ============================================
+// VORSCHLÄGE
+// ============================================
 
 document
-  .querySelectorAll(".suggestion")
-  .forEach(button => {
+    .querySelectorAll(".suggestion")
+    .forEach(button => {
 
-    button.addEventListener(
-      "click",
-      () => {
+        button.addEventListener(
+            "click",
+            () => {
 
-        sendMessage(
-          button.textContent.trim()
+                sendMessage(
+                    button.textContent.trim()
+                );
+
+            }
         );
 
-      }
-    );
-
-  });
+    });
 
 
-// =====================================================
-// NEW CHAT
-// =====================================================
+// ============================================
+// NEUER CHAT
+// ============================================
 
 newChatButton.addEventListener(
-  "click",
-  () => {
+    "click",
+    () => {
 
-    previousInteractionId = null;
+        previousInteractionId = null;
 
-    location.reload();
+        location.reload();
 
-  }
+    }
 );
 
 
-// =====================================================
+// ============================================
 // SPRACHEINGABE
-// =====================================================
+// ============================================
 
 const SpeechRecognition =
-  window.SpeechRecognition ||
-  window.webkitSpeechRecognition;
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
 
 
 let recognition = null;
@@ -327,322 +356,344 @@ let recording = false;
 
 if (SpeechRecognition) {
 
-  recognition =
-    new SpeechRecognition();
+    recognition =
+        new SpeechRecognition();
 
-  recognition.lang = "de-DE";
+    recognition.lang = "de-DE";
 
-  recognition.continuous = false;
+    recognition.continuous = false;
 
-  recognition.interimResults = false;
+    recognition.interimResults = false;
 
 
-  recognition.onstart = () => {
+    recognition.onstart = () => {
 
-    recording = true;
+        recording = true;
 
-    micButton.classList.add(
-      "recording"
+        micButton.classList.add(
+            "recording"
+        );
+
+    };
+
+
+    recognition.onresult = (event) => {
+
+        const transcript =
+            event.results[0][0].transcript;
+
+
+        messageInput.value =
+            transcript;
+
+
+        messageInput.focus();
+
+    };
+
+
+    recognition.onend = () => {
+
+        recording = false;
+
+        micButton.classList.remove(
+            "recording"
+        );
+
+    };
+
+
+    recognition.onerror = () => {
+
+        recording = false;
+
+        micButton.classList.remove(
+            "recording"
+        );
+
+    };
+
+
+    micButton.addEventListener(
+        "click",
+        () => {
+
+            if (recording) {
+
+                recognition.stop();
+
+            } else {
+
+                recognition.start();
+
+            }
+
+        }
     );
-
-  };
-
-
-  recognition.onresult = event => {
-
-    const transcript =
-      event.results[0][0].transcript;
-
-    messageInput.value =
-      transcript;
-
-    messageInput.focus();
-
-  };
-
-
-  recognition.onend = () => {
-
-    recording = false;
-
-    micButton.classList.remove(
-      "recording"
-    );
-
-  };
-
-
-  recognition.onerror = () => {
-
-    recording = false;
-
-    micButton.classList.remove(
-      "recording"
-    );
-
-  };
-
-
-  micButton.addEventListener(
-    "click",
-    () => {
-
-      if (recording) {
-
-        recognition.stop();
-
-      } else {
-
-        recognition.start();
-
-      }
-
-    }
-  );
 
 } else {
 
-  micButton.addEventListener(
-    "click",
-    () => {
+    micButton.addEventListener(
+        "click",
+        () => {
 
-      alert(
-        "Dein Browser unterstützt leider keine Spracheingabe."
-      );
+            alert(
+                "Dein Browser unterstützt leider keine Spracheingabe."
+            );
 
-    }
-  );
+        }
+    );
 
 }
 
 
-// =====================================================
+// ============================================
 // LOGIN / REGISTRIERUNG
-// =====================================================
+// ============================================
 
 let registerMode = false;
 
 
 function openLogin() {
 
-  registerMode = false;
+    registerMode = false;
 
-  authModal.classList.remove(
-    "hidden"
-  );
+    authModal.classList.remove(
+        "hidden"
+    );
 
-  authTitle.textContent =
-    "Willkommen zurück";
 
-  authSubtitle.textContent =
-    "Melde dich bei deinem Safi AI Konto an.";
+    authTitle.textContent =
+        "Willkommen zurück";
 
-  authSubmit.textContent =
-    "Anmelden";
 
-  switchText.textContent =
-    "Noch kein Konto?";
+    authSubtitle.textContent =
+        "Melde dich bei deinem Safi AI Konto an.";
 
-  switchAuth.textContent =
-    "Registrieren";
 
-  registerNameContainer.style.display =
-    "none";
+    authSubmit.textContent =
+        "Anmelden";
+
+
+    switchText.textContent =
+        "Noch kein Konto?";
+
+
+    switchAuth.textContent =
+        "Registrieren";
+
+
+    registerNameContainer.style.display =
+        "none";
 }
 
 
 function openRegister() {
 
-  registerMode = true;
+    registerMode = true;
 
-  authModal.classList.remove(
-    "hidden"
-  );
+    authModal.classList.remove(
+        "hidden"
+    );
 
-  authTitle.textContent =
-    "Erstelle dein Konto";
 
-  authSubtitle.textContent =
-    "Registriere dich kostenlos bei Safi AI.";
+    authTitle.textContent =
+        "Erstelle dein Konto";
 
-  authSubmit.textContent =
-    "Konto erstellen";
 
-  switchText.textContent =
-    "Du hast bereits ein Konto?";
+    authSubtitle.textContent =
+        "Registriere dich kostenlos bei Safi AI.";
 
-  switchAuth.textContent =
-    "Anmelden";
 
-  registerNameContainer.style.display =
-    "block";
+    authSubmit.textContent =
+        "Konto erstellen";
+
+
+    switchText.textContent =
+        "Du hast bereits ein Konto?";
+
+
+    switchAuth.textContent =
+        "Anmelden";
+
+
+    registerNameContainer.style.display =
+        "block";
 }
 
 
+// Buttons
 loginButton.addEventListener(
-  "click",
-  openLogin
+    "click",
+    openLogin
 );
 
 
 topLoginButton.addEventListener(
-  "click",
-  openLogin
+    "click",
+    openLogin
 );
 
 
 registerButton.addEventListener(
-  "click",
-  openRegister
+    "click",
+    openRegister
 );
 
 
+// ============================================
+// MODAL SCHLIESSEN
+// ============================================
+
 closeModal.addEventListener(
-  "click",
-  () => {
+    "click",
+    () => {
 
-    authModal.classList.add(
-      "hidden"
-    );
+        authModal.classList.add(
+            "hidden"
+        );
 
-  }
+    }
 );
 
 
 authModal.addEventListener(
-  "click",
-  event => {
+    "click",
+    (event) => {
 
-    if (
-      event.target === authModal
-    ) {
+        if (
+            event.target === authModal
+        ) {
 
-      authModal.classList.add(
-        "hidden"
-      );
+            authModal.classList.add(
+                "hidden"
+            );
+
+        }
 
     }
-
-  }
 );
 
+
+// ============================================
+// ZWISCHEN LOGIN UND REGISTRIERUNG
+// ============================================
 
 switchAuth.addEventListener(
-  "click",
-  () => {
+    "click",
+    () => {
 
-    if (registerMode) {
+        if (registerMode) {
 
-      openLogin();
+            openLogin();
 
-    } else {
+        } else {
 
-      openRegister();
+            openRegister();
+
+        }
 
     }
-
-  }
 );
 
 
-// =====================================================
-// DEMO LOGIN / REGISTRIERUNG
-// =====================================================
+// ============================================
+// LOGIN / REGISTRIERUNG DEMO
+// ============================================
 
 authSubmit.addEventListener(
-  "click",
-  () => {
+    "click",
+    () => {
 
-    const mail =
-      email.value.trim();
+        const mail =
+            email.value.trim();
 
-    const pass =
-      password.value.trim();
-
-
-    if (!mail || !pass) {
-
-      alert(
-        "Bitte E-Mail und Passwort eingeben."
-      );
-
-      return;
-
-    }
+        const pass =
+            password.value.trim();
 
 
-    if (registerMode) {
+        if (!mail || !pass) {
 
-      const name =
-        registerName.value.trim();
+            alert(
+                "Bitte E-Mail und Passwort eingeben."
+            );
+
+            return;
+
+        }
 
 
-      if (!name) {
+        if (registerMode) {
 
-        alert(
-          "Bitte gib deinen Namen ein."
+            const name =
+                registerName.value.trim();
+
+
+            if (!name) {
+
+                alert(
+                    "Bitte gib deinen Namen ein."
+                );
+
+                return;
+
+            }
+
+
+            localStorage.setItem(
+                "safiUser",
+                JSON.stringify({
+                    name: name,
+                    email: mail
+                })
+            );
+
+
+            alert(
+                "Konto wurde erstellt!"
+            );
+
+        } else {
+
+            localStorage.setItem(
+                "safiUser",
+                JSON.stringify({
+                    email: mail
+                })
+            );
+
+
+            alert(
+                "Du wurdest angemeldet!"
+            );
+
+        }
+
+
+        authModal.classList.add(
+            "hidden"
         );
 
-        return;
 
-      }
-
-
-      localStorage.setItem(
-        "safiUser",
-        JSON.stringify({
-          name: name,
-          email: mail
-        })
-      );
-
-
-      alert(
-        "Konto wurde erstellt!"
-      );
-
-    } else {
-
-      localStorage.setItem(
-        "safiUser",
-        JSON.stringify({
-          email: mail
-        })
-      );
-
-
-      alert(
-        "Du wurdest angemeldet!"
-      );
+        email.value = "";
+        password.value = "";
+        registerName.value = "";
 
     }
-
-
-    authModal.classList.add(
-      "hidden"
-    );
-
-    email.value = "";
-
-    password.value = "";
-
-    registerName.value = "";
-
-  }
 );
 
 
-// =====================================================
+// ============================================
 // THEME
-// =====================================================
+// ============================================
 
 themeButton.addEventListener(
-  "click",
-  () => {
+    "click",
+    () => {
 
-    document.body.classList.toggle(
-      "light-mode"
-    );
+        document.body.classList.toggle(
+            "light-mode"
+        );
 
-  }
+    }
 );
