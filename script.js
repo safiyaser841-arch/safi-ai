@@ -1,352 +1,442 @@
-// ============================================
-// SAFI AI – SCRIPT
-// ============================================
-
-// DEINE RENDER-URL HIER EINTRAGEN
-const SERVER_URL = "https://DEIN-SAFI-AI-SERVER.onrender.com";
+// ==========================================
+// SAFI AI
+// ==========================================
 
 
-// Elemente
-const chat = document.getElementById("chat");
-const messageInput = document.getElementById("messageInput");
-const sendButton = document.getElementById("sendButton");
-const micButton = document.getElementById("micButton");
+// ==========================================
+// DEIN RENDER SERVER
+// ==========================================
+//
+// HIER deine Render-URL eintragen.
+//
+// Beispiel:
+// https://safi-ai-server-xxxx.onrender.com
+//
 
-const newChatButton = document.getElementById("newChatButton");
+const SERVER_URL =
+  "DEINE-RENDER-URL";
 
-const loginButton = document.getElementById("loginButton");
-const registerButton = document.getElementById("registerButton");
-const topLoginButton = document.getElementById("topLoginButton");
 
-const authModal = document.getElementById("authModal");
-const closeModal = document.getElementById("closeModal");
+// ==========================================
+// ELEMENTE
+// ==========================================
 
-const authTitle = document.getElementById("authTitle");
-const authSubtitle = document.getElementById("authSubtitle");
+const chat =
+  document.getElementById("chat");
 
-const authSubmit = document.getElementById("authSubmit");
+const messageInput =
+  document.getElementById("messageInput");
 
-const switchAuth = document.getElementById("switchAuth");
-const switchText = document.getElementById("switchText");
+const sendButton =
+  document.getElementById("sendButton");
 
-const registerNameContainer =
-    document.getElementById("registerNameContainer");
+const micButton =
+  document.getElementById("micButton");
 
-const registerName =
-    document.getElementById("registerName");
+const newChatButton =
+  document.getElementById("newChatButton");
 
-const email =
-    document.getElementById("email");
 
-const password =
-    document.getElementById("password");
+// Login
+
+const loginButton =
+  document.getElementById("loginButton");
+
+const registerButton =
+  document.getElementById("registerButton");
+
+const topLoginButton =
+  document.getElementById("topLoginButton");
+
+
+// Modal
+
+const authModal =
+  document.getElementById("authModal");
+
+const closeModal =
+  document.getElementById("closeModal");
+
+const authTitle =
+  document.getElementById("authTitle");
+
+const authSubtitle =
+  document.getElementById("authSubtitle");
+
+const authSubmit =
+  document.getElementById("authSubmit");
+
+const switchAuth =
+  document.getElementById("switchAuth");
+
+const switchText =
+  document.getElementById("switchText");
+
+const nameContainer =
+  document.getElementById("nameContainer");
+
+const nameInput =
+  document.getElementById("nameInput");
+
+const emailInput =
+  document.getElementById("emailInput");
+
+const passwordInput =
+  document.getElementById("passwordInput");
 
 const themeButton =
-    document.getElementById("themeButton");
+  document.getElementById("themeButton");
 
 
-// ============================================
+// ==========================================
 // CHAT MEMORY
-// ============================================
+// ==========================================
 
 let previousInteractionId = null;
 
 
-// ============================================
+// ==========================================
 // NACHRICHT ANZEIGEN
-// ============================================
+// ==========================================
 
 function addMessage(text, sender) {
 
-    const message = document.createElement("div");
+  const message =
+    document.createElement("div");
 
-    message.className = `message ${sender}`;
+  message.className =
+    "message " + sender;
 
-    const avatar = document.createElement("div");
 
-    avatar.className = "message-avatar";
+  const avatar =
+    document.createElement("div");
 
-    avatar.textContent =
-        sender === "user" ? "Du" : "S";
+  avatar.className =
+    "message-avatar";
 
-    const content = document.createElement("div");
+  avatar.textContent =
+    sender === "user"
+      ? "Du"
+      : "S";
 
-    content.className = "message-content";
 
-    content.textContent = text;
+  const content =
+    document.createElement("div");
 
-    message.appendChild(avatar);
-    message.appendChild(content);
+  content.className =
+    "message-content";
 
-    chat.appendChild(message);
+  content.textContent =
+    text;
 
-    chat.scrollTop = chat.scrollHeight;
+
+  message.appendChild(avatar);
+
+  message.appendChild(content);
+
+  chat.appendChild(message);
+
+
+  chat.scrollTop =
+    chat.scrollHeight;
 }
 
 
-// ============================================
-// SCHREIB-ANIMATION
-// ============================================
+// ==========================================
+// TYPING
+// ==========================================
 
 function showTyping() {
 
-    const typing = document.createElement("div");
+  const typing =
+    document.createElement("div");
 
-    typing.className = "message";
-    typing.id = "typing";
+  typing.className =
+    "message";
 
-    typing.innerHTML = `
-        <div class="message-avatar">S</div>
+  typing.id =
+    "typing";
 
-        <div class="message-content">
 
-            <div class="typing">
+  typing.innerHTML = `
+    <div class="message-avatar">S</div>
 
-                <span></span>
-                <span></span>
-                <span></span>
+    <div class="message-content">
 
-            </div>
+      <div class="typing">
 
-        </div>
-    `;
+        <span></span>
+        <span></span>
+        <span></span>
 
-    chat.appendChild(typing);
+      </div>
 
-    chat.scrollTop = chat.scrollHeight;
+    </div>
+  `;
+
+
+  chat.appendChild(typing);
+
+  chat.scrollTop =
+    chat.scrollHeight;
 }
 
 
 function removeTyping() {
 
-    const typing =
-        document.getElementById("typing");
+  const typing =
+    document.getElementById("typing");
 
-    if (typing) {
-        typing.remove();
-    }
+  if (typing) {
+
+    typing.remove();
+
+  }
 }
 
 
-// ============================================
-// NACHRICHT SENDEN
-// ============================================
+// ==========================================
+// KI NACHRICHT SENDEN
+// ==========================================
 
 async function sendMessage(text = null) {
 
-    const message =
-        text || messageInput.value.trim();
-
-    if (!message) {
-        return;
-    }
+  const message =
+    text ||
+    messageInput.value.trim();
 
 
-    // Willkommen entfernen
-    const welcome =
-        document.getElementById("welcome");
+  if (!message) {
 
-    if (welcome) {
-        welcome.remove();
-    }
+    return;
+
+  }
 
 
-    // Nutzer-Nachricht
-    addMessage(message, "user");
+  // Welcome entfernen
+
+  const welcome =
+    document.getElementById("welcome");
+
+  if (welcome) {
+
+    welcome.remove();
+
+  }
 
 
-    // Eingabe löschen
-    messageInput.value = "";
+  // User Nachricht
 
-    messageInput.style.height = "auto";
-
-
-    // Button deaktivieren
-    sendButton.disabled = true;
+  addMessage(
+    message,
+    "user"
+  );
 
 
-    // Schreibanimation
-    showTyping();
+  // Input löschen
+
+  messageInput.value = "";
+
+  messageInput.style.height =
+    "auto";
 
 
-    try {
-
-        const response = await fetch(
-            `${SERVER_URL}/chat`,
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-
-                    message: message,
-
-                    previousInteractionId:
-                        previousInteractionId
-
-                })
-            }
-        );
+  sendButton.disabled =
+    true;
 
 
-        const data =
-            await response.json();
+  showTyping();
 
 
-        removeTyping();
+  try {
 
+    const response =
+      await fetch(
+        SERVER_URL + "/chat",
+        {
+          method: "POST",
 
-        if (!response.ok) {
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
 
-            throw new Error(
-                data.error ||
-                "Serverfehler"
-            );
+          body: JSON.stringify({
+
+            message:
+              message,
+
+            previousInteractionId:
+              previousInteractionId
+
+          })
 
         }
+      );
 
 
-        // KI-Antwort
-        addMessage(
-            data.reply,
-            "ai"
-        );
+    const data =
+      await response.json();
 
 
-        // Unterhaltung merken
-        previousInteractionId =
-            data.interactionId;
+    removeTyping();
 
 
-    } catch (error) {
+    if (!response.ok) {
 
-        console.error(
-            "Safi AI Fehler:",
-            error
-        );
-
-
-        removeTyping();
-
-
-        addMessage(
-            "❌ Safi AI konnte gerade keine Verbindung herstellen. Bitte versuche es gleich noch einmal.",
-            "ai"
-        );
+      throw new Error(
+        data.error ||
+        "Serverfehler"
+      );
 
     }
 
 
-    sendButton.disabled = false;
+    // KI Antwort
 
-    messageInput.focus();
+    addMessage(
+      data.reply,
+      "ai"
+    );
+
+
+    // Conversation speichern
+
+    previousInteractionId =
+      data.interactionId;
+
+
+  } catch (error) {
+
+    console.error(
+      "Safi AI Fehler:",
+      error
+    );
+
+
+    removeTyping();
+
+
+    addMessage(
+      "❌ Safi AI konnte gerade keine Verbindung herstellen. Bitte versuche es noch einmal.",
+      "ai"
+    );
+
+  }
+
+
+  sendButton.disabled =
+    false;
+
+  messageInput.focus();
+
 }
 
 
-// ============================================
-// SENDEN BUTTON
-// ============================================
+// ==========================================
+// SEND BUTTON
+// ==========================================
 
 sendButton.addEventListener(
-    "click",
-    () => {
-        sendMessage();
-    }
+  "click",
+  () => {
+
+    sendMessage();
+
+  }
 );
 
 
-// ============================================
-// ENTER SENDEN
-// ============================================
+// ==========================================
+// ENTER
+// ==========================================
 
 messageInput.addEventListener(
-    "keydown",
-    (event) => {
+  "keydown",
+  event => {
 
-        if (
-            event.key === "Enter" &&
-            !event.shiftKey
-        ) {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
 
-            event.preventDefault();
+      event.preventDefault();
 
-            sendMessage();
-
-        }
+      sendMessage();
 
     }
+
+  }
 );
 
 
-// ============================================
-// TEXTFELD AUTOMATISCH VERGRÖSSERN
-// ============================================
+// ==========================================
+// TEXTAREA
+// ==========================================
 
 messageInput.addEventListener(
-    "input",
-    () => {
+  "input",
+  () => {
 
-        messageInput.style.height =
-            "auto";
+    messageInput.style.height =
+      "auto";
 
-        messageInput.style.height =
-            Math.min(
-                messageInput.scrollHeight,
-                150
-            ) + "px";
+    messageInput.style.height =
+      Math.min(
+        messageInput.scrollHeight,
+        150
+      ) + "px";
 
-    }
+  }
 );
 
 
-// ============================================
+// ==========================================
 // VORSCHLÄGE
-// ============================================
+// ==========================================
 
 document
-    .querySelectorAll(".suggestion")
-    .forEach(button => {
+  .querySelectorAll(".suggestion")
+  .forEach(button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+    button.addEventListener(
+      "click",
+      () => {
 
-                sendMessage(
-                    button.textContent.trim()
-                );
-
-            }
+        sendMessage(
+          button.textContent.trim()
         );
 
-    });
+      }
+    );
+
+  });
 
 
-// ============================================
+// ==========================================
 // NEUER CHAT
-// ============================================
+// ==========================================
 
 newChatButton.addEventListener(
-    "click",
-    () => {
+  "click",
+  () => {
 
-        previousInteractionId = null;
+    previousInteractionId =
+      null;
 
-        location.reload();
+    location.reload();
 
-    }
+  }
 );
 
 
-// ============================================
+// ==========================================
 // SPRACHEINGABE
-// ============================================
+// ==========================================
 
 const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
 
 
 let recognition = null;
@@ -356,344 +446,382 @@ let recording = false;
 
 if (SpeechRecognition) {
 
-    recognition =
-        new SpeechRecognition();
-
-    recognition.lang = "de-DE";
-
-    recognition.continuous = false;
-
-    recognition.interimResults = false;
+  recognition =
+    new SpeechRecognition();
 
 
-    recognition.onstart = () => {
-
-        recording = true;
-
-        micButton.classList.add(
-            "recording"
-        );
-
-    };
+  recognition.lang =
+    "de-DE";
 
 
-    recognition.onresult = (event) => {
-
-        const transcript =
-            event.results[0][0].transcript;
+  recognition.continuous =
+    false;
 
 
-        messageInput.value =
-            transcript;
+  recognition.interimResults =
+    false;
 
 
-        messageInput.focus();
+  recognition.onstart =
+    () => {
+
+      recording =
+        true;
+
+      micButton.classList.add(
+        "recording"
+      );
 
     };
 
 
-    recognition.onend = () => {
+  recognition.onresult =
+    event => {
 
-        recording = false;
-
-        micButton.classList.remove(
-            "recording"
-        );
-
-    };
+      const transcript =
+        event.results[0][0]
+          .transcript;
 
 
-    recognition.onerror = () => {
+      messageInput.value =
+        transcript;
 
-        recording = false;
 
-        micButton.classList.remove(
-            "recording"
-        );
+      messageInput.focus();
 
     };
 
 
-    micButton.addEventListener(
-        "click",
-        () => {
+  recognition.onend =
+    () => {
 
-            if (recording) {
+      recording =
+        false;
 
-                recognition.stop();
+      micButton.classList.remove(
+        "recording"
+      );
 
-            } else {
+    };
 
-                recognition.start();
 
-            }
+  recognition.onerror =
+    () => {
 
-        }
-    );
+      recording =
+        false;
+
+      micButton.classList.remove(
+        "recording"
+      );
+
+    };
+
+
+  micButton.addEventListener(
+    "click",
+    () => {
+
+      if (recording) {
+
+        recognition.stop();
+
+      } else {
+
+        recognition.start();
+
+      }
+
+    }
+  );
 
 } else {
 
-    micButton.addEventListener(
-        "click",
-        () => {
+  micButton.addEventListener(
+    "click",
+    () => {
 
-            alert(
-                "Dein Browser unterstützt leider keine Spracheingabe."
-            );
+      alert(
+        "Dein Browser unterstützt keine Spracheingabe."
+      );
 
-        }
-    );
+    }
+  );
 
 }
 
 
-// ============================================
-// LOGIN / REGISTRIERUNG
-// ============================================
+// ==========================================
+// LOGIN
+// ==========================================
 
-let registerMode = false;
+let registerMode =
+  false;
 
 
 function openLogin() {
 
-    registerMode = false;
-
-    authModal.classList.remove(
-        "hidden"
-    );
+  registerMode =
+    false;
 
 
-    authTitle.textContent =
-        "Willkommen zurück";
+  authModal.classList.remove(
+    "hidden"
+  );
 
 
-    authSubtitle.textContent =
-        "Melde dich bei deinem Safi AI Konto an.";
+  authTitle.textContent =
+    "Willkommen zurück";
 
 
-    authSubmit.textContent =
-        "Anmelden";
+  authSubtitle.textContent =
+    "Melde dich bei deinem Safi AI Konto an.";
 
 
-    switchText.textContent =
-        "Noch kein Konto?";
+  authSubmit.textContent =
+    "Anmelden";
 
 
-    switchAuth.textContent =
-        "Registrieren";
+  switchText.textContent =
+    "Noch kein Konto?";
 
 
-    registerNameContainer.style.display =
-        "none";
+  switchAuth.textContent =
+    "Registrieren";
+
+
+  nameContainer.classList.add(
+    "hidden"
+  );
+
 }
 
 
 function openRegister() {
 
-    registerMode = true;
-
-    authModal.classList.remove(
-        "hidden"
-    );
+  registerMode =
+    true;
 
 
-    authTitle.textContent =
-        "Erstelle dein Konto";
+  authModal.classList.remove(
+    "hidden"
+  );
 
 
-    authSubtitle.textContent =
-        "Registriere dich kostenlos bei Safi AI.";
+  authTitle.textContent =
+    "Erstelle dein Konto";
 
 
-    authSubmit.textContent =
-        "Konto erstellen";
+  authSubtitle.textContent =
+    "Registriere dich kostenlos bei Safi AI.";
 
 
-    switchText.textContent =
-        "Du hast bereits ein Konto?";
+  authSubmit.textContent =
+    "Konto erstellen";
 
 
-    switchAuth.textContent =
-        "Anmelden";
+  switchText.textContent =
+    "Du hast bereits ein Konto?";
 
 
-    registerNameContainer.style.display =
-        "block";
+  switchAuth.textContent =
+    "Anmelden";
+
+
+  nameContainer.classList.remove(
+    "hidden"
+  );
+
 }
 
 
 // Buttons
+
 loginButton.addEventListener(
-    "click",
-    openLogin
+  "click",
+  openLogin
 );
 
 
 topLoginButton.addEventListener(
-    "click",
-    openLogin
+  "click",
+  openLogin
 );
 
 
 registerButton.addEventListener(
-    "click",
-    openRegister
+  "click",
+  openRegister
 );
 
 
-// ============================================
+// ==========================================
 // MODAL SCHLIESSEN
-// ============================================
+// ==========================================
 
 closeModal.addEventListener(
-    "click",
-    () => {
+  "click",
+  () => {
 
-        authModal.classList.add(
-            "hidden"
-        );
+    authModal.classList.add(
+      "hidden"
+    );
 
-    }
+  }
 );
 
 
 authModal.addEventListener(
-    "click",
-    (event) => {
+  "click",
+  event => {
 
-        if (
-            event.target === authModal
-        ) {
+    if (
+      event.target === authModal
+    ) {
 
-            authModal.classList.add(
-                "hidden"
-            );
-
-        }
+      authModal.classList.add(
+        "hidden"
+      );
 
     }
+
+  }
 );
 
 
-// ============================================
-// ZWISCHEN LOGIN UND REGISTRIERUNG
-// ============================================
+// ==========================================
+// LOGIN <-> REGISTRIERUNG
+// ==========================================
 
 switchAuth.addEventListener(
-    "click",
-    () => {
+  "click",
+  () => {
 
-        if (registerMode) {
+    if (registerMode) {
 
-            openLogin();
+      openLogin();
 
-        } else {
+    } else {
 
-            openRegister();
-
-        }
+      openRegister();
 
     }
+
+  }
 );
 
 
-// ============================================
-// LOGIN / REGISTRIERUNG DEMO
-// ============================================
+// ==========================================
+// LOGIN / REGISTRIERUNG
+// ==========================================
 
 authSubmit.addEventListener(
-    "click",
-    () => {
+  "click",
+  () => {
 
-        const mail =
-            email.value.trim();
+    const email =
+      emailInput.value.trim();
 
-        const pass =
-            password.value.trim();
-
-
-        if (!mail || !pass) {
-
-            alert(
-                "Bitte E-Mail und Passwort eingeben."
-            );
-
-            return;
-
-        }
+    const password =
+      passwordInput.value.trim();
 
 
-        if (registerMode) {
+    if (
+      !email ||
+      !password
+    ) {
 
-            const name =
-                registerName.value.trim();
+      alert(
+        "Bitte E-Mail und Passwort eingeben."
+      );
 
-
-            if (!name) {
-
-                alert(
-                    "Bitte gib deinen Namen ein."
-                );
-
-                return;
-
-            }
-
-
-            localStorage.setItem(
-                "safiUser",
-                JSON.stringify({
-                    name: name,
-                    email: mail
-                })
-            );
-
-
-            alert(
-                "Konto wurde erstellt!"
-            );
-
-        } else {
-
-            localStorage.setItem(
-                "safiUser",
-                JSON.stringify({
-                    email: mail
-                })
-            );
-
-
-            alert(
-                "Du wurdest angemeldet!"
-            );
-
-        }
-
-
-        authModal.classList.add(
-            "hidden"
-        );
-
-
-        email.value = "";
-        password.value = "";
-        registerName.value = "";
+      return;
 
     }
+
+
+    if (registerMode) {
+
+      const name =
+        nameInput.value.trim();
+
+
+      if (!name) {
+
+        alert(
+          "Bitte deinen Namen eingeben."
+        );
+
+        return;
+
+      }
+
+
+      localStorage.setItem(
+        "safiUser",
+        JSON.stringify({
+
+          name:
+            name,
+
+          email:
+            email
+
+        })
+      );
+
+
+      alert(
+        "Konto wurde erstellt!"
+      );
+
+
+    } else {
+
+      localStorage.setItem(
+        "safiUser",
+        JSON.stringify({
+
+          email:
+            email
+
+        })
+      );
+
+
+      alert(
+        "Du wurdest angemeldet!"
+      );
+
+    }
+
+
+    authModal.classList.add(
+      "hidden"
+    );
+
+
+    emailInput.value = "";
+
+    passwordInput.value = "";
+
+    nameInput.value = "";
+
+  }
 );
 
 
-// ============================================
+// ==========================================
 // THEME
-// ============================================
+// ==========================================
 
 themeButton.addEventListener(
-    "click",
-    () => {
+  "click",
+  () => {
 
-        document.body.classList.toggle(
-            "light-mode"
-        );
+    document.body.classList.toggle(
+      "light-theme"
+    );
 
-    }
+  }
 );
