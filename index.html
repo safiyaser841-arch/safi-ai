@@ -4,244 +4,302 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Safi AI – Intelligenter Assistent</title>
+  <title>Safi AI</title>
 
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <div class="app">
+<div class="app">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
 
-      <div class="logo">
-        <div class="logo-icon">S</div>
+    <div class="brand">
+      <div class="brand-logo">S</div>
 
-        <div>
-          <h1>Safi AI</h1>
-          <span>Intelligenter Assistent</span>
-        </div>
+      <div>
+        <h1>Safi AI</h1>
+        <p>Intelligenter Assistent</p>
       </div>
+    </div>
 
-      <button class="new-chat active" id="newChatButton">
-        <span>＋</span>
+
+    <button class="new-chat" id="newChatButton">
+      <span>＋</span>
+      Neuer Chat
+    </button>
+
+
+    <div class="navigation">
+
+      <button class="nav-item active">
+        <span>💬</span>
         Neuer Chat
       </button>
 
-      <nav>
-        <button>◷ <span>Verlauf</span></button>
-        <button>★ <span>Favoriten</span></button>
-        <button>▣ <span>Vorlagen</span></button>
-        <button>⚙ <span>Einstellungen</span></button>
-      </nav>
-
-      <div class="login-box">
-        <h3>Dein Safi AI Konto</h3>
-
-        <p>
-          Melde dich an, um deine Chats
-          sicher zu speichern.
-        </p>
-
-        <button class="login-main" id="loginButton">
-          Anmelden
-        </button>
-
-        <button class="register-button" id="registerButton">
-          Registrieren
-        </button>
-      </div>
-
-      <div class="version">
-        Safi AI v1.0
-      </div>
-
-    </aside>
-
-
-    <!-- MAIN -->
-    <main class="main">
-
-      <header class="topbar">
-
-        <div>
-          <h2>Hallo! Ich bin Safi AI 👋</h2>
-          <p>Dein intelligenter Assistent für Fragen und Aufgaben.</p>
-        </div>
-
-        <div class="top-actions">
-
-          <button id="themeButton">
-            ☼
-            <span>Theme</span>
-          </button>
-
-          <button>
-            🌐 Deutsch
-          </button>
-
-          <button class="top-login" id="topLoginButton">
-            ♙ Anmelden
-          </button>
-
-        </div>
-
-      </header>
-
-
-      <!-- CHAT -->
-      <section class="chat-area" id="chat">
-
-        <div class="welcome" id="welcome">
-
-          <div class="welcome-icon">
-            S
-          </div>
-
-          <h2>Wie kann ich dir helfen?</h2>
-
-          <p>
-            Frag mich alles – Lernen, Programmieren,
-            Mathematik, Ideen und vieles mehr.
-          </p>
-
-          <div class="suggestions">
-
-            <button class="suggestion">
-              📚 Erkläre mir Mathematik
-            </button>
-
-            <button class="suggestion">
-              💻 Schreibe Python Code
-            </button>
-
-            <button class="suggestion">
-              ✍️ Erstelle eine Zusammenfassung
-            </button>
-
-            <button class="suggestion">
-              💡 Gib mir eine Idee
-            </button>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- INPUT -->
-      <div class="composer-wrapper">
-
-        <div class="composer">
-
-          <button
-            class="mic-button"
-            id="micButton"
-            title="Spracheingabe">
-            🎙
-          </button>
-
-          <textarea
-            id="messageInput"
-            placeholder="Nachricht an Safi AI..."
-            rows="1"
-          ></textarea>
-
-          <button
-            class="attach-button"
-            title="Datei">
-            📎
-          </button>
-
-          <button
-            class="send-button"
-            id="sendButton">
-            ↑
-          </button>
-
-        </div>
-
-        <div class="security">
-          🔒 Deine Unterhaltung wird sicher übertragen.
-        </div>
-
-      </div>
-
-    </main>
-
-  </div>
-
-
-  <!-- LOGIN / REGISTER MODAL -->
-  <div class="modal hidden" id="authModal">
-
-    <div class="modal-box">
-
-      <button class="close" id="closeModal">
-        ×
+      <button class="nav-item">
+        <span>◷</span>
+        Verlauf
       </button>
 
-      <div class="modal-logo">
-        S
-      </div>
+      <button class="nav-item">
+        <span>★</span>
+        Favoriten
+      </button>
 
-      <h2 id="authTitle">
-        Willkommen bei Safi AI
-      </h2>
+      <button class="nav-item">
+        <span>▣</span>
+        Vorlagen
+      </button>
 
-      <p id="authSubtitle">
-        Melde dich an, um fortzufahren.
+      <button class="nav-item">
+        <span>⚙</span>
+        Einstellungen
+      </button>
+
+    </div>
+
+
+    <div class="account-card">
+
+      <h3>Safi AI Konto</h3>
+
+      <p>
+        Melde dich an und speichere
+        deine Unterhaltungen sicher.
       </p>
 
-
-      <div id="registerNameContainer" class="hidden-field">
-        <input
-          id="registerName"
-          type="text"
-          placeholder="Dein Name"
-        >
-      </div>
-
-
-      <input
-        id="email"
-        type="email"
-        placeholder="E-Mail-Adresse"
-      >
-
-      <input
-        id="password"
-        type="password"
-        placeholder="Passwort"
-      >
-
-
       <button
-        class="auth-submit"
-        id="authSubmit">
+        class="account-login"
+        id="loginButton">
         Anmelden
       </button>
 
+      <button
+        class="account-register"
+        id="registerButton">
+        Registrieren
+      </button>
 
-      <p class="switch-auth">
-        <span id="switchText">
-          Noch kein Konto?
-        </span>
+    </div>
 
-        <button id="switchAuth">
-          Registrieren
+
+    <div class="sidebar-bottom">
+      ◐ Safi AI v1.0
+    </div>
+
+  </aside>
+
+
+
+  <!-- HAUPTBEREICH -->
+  <main class="main">
+
+    <!-- HEADER -->
+    <header class="header">
+
+      <div>
+        <h2>Hallo! Ich bin Safi AI 👋</h2>
+
+        <p>
+          Dein intelligenter Assistent für alle Fragen und Aufgaben.
+        </p>
+      </div>
+
+
+      <div class="header-actions">
+
+        <button id="themeButton">
+          ☼ <span>Theme</span>
         </button>
-      </p>
+
+        <button>
+          🌐 Deutsch
+        </button>
+
+        <button
+          class="header-login"
+          id="topLoginButton">
+          ♙ Anmelden
+        </button>
+
+      </div>
+
+    </header>
+
+
+
+    <!-- CHAT -->
+    <section class="chat-container" id="chat">
+
+      <div class="welcome" id="welcome">
+
+        <div class="welcome-logo">
+          S
+        </div>
+
+        <h2>Wie kann ich dir helfen?</h2>
+
+        <p>
+          Frag mich alles – Lernen, Programmieren,
+          Mathematik, Ideen und vieles mehr.
+        </p>
+
+
+        <div class="suggestions">
+
+          <button class="suggestion">
+            📚 Erkläre mir Mathematik
+          </button>
+
+          <button class="suggestion">
+            💻 Schreibe Python Code
+          </button>
+
+          <button class="suggestion">
+            ✍️ Zusammenfassung erstellen
+          </button>
+
+          <button class="suggestion">
+            💡 Gib mir eine Idee
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- EINGABE -->
+    <div class="composer-area">
+
+      <div class="composer">
+
+        <button
+          class="mic"
+          id="micButton"
+          title="Spracheingabe">
+          🎙
+        </button>
+
+
+        <textarea
+          id="messageInput"
+          rows="1"
+          placeholder="Nachricht eingeben..."></textarea>
+
+
+        <button
+          class="attachment"
+          title="Datei anhängen">
+          📎
+        </button>
+
+
+        <button
+          class="send"
+          id="sendButton">
+          ↑
+        </button>
+
+      </div>
+
+
+      <div class="security">
+        🔒 Deine Daten werden sicher und verschlüsselt übertragen.
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+
+<!-- LOGIN / REGISTRIERUNG -->
+
+<div
+  class="modal hidden"
+  id="authModal">
+
+  <div class="auth-box">
+
+    <button
+      class="close-modal"
+      id="closeModal">
+      ×
+    </button>
+
+
+    <div class="auth-logo">
+      S
+    </div>
+
+
+    <h2 id="authTitle">
+      Willkommen zurück
+    </h2>
+
+    <p id="authSubtitle">
+      Melde dich bei deinem Safi AI Konto an.
+    </p>
+
+
+    <div
+      id="nameContainer"
+      class="hidden">
+
+      <input
+        id="nameInput"
+        type="text"
+        placeholder="Dein Name">
+
+    </div>
+
+
+    <input
+      id="emailInput"
+      type="email"
+      placeholder="E-Mail-Adresse">
+
+
+    <input
+      id="passwordInput"
+      type="password"
+      placeholder="Passwort">
+
+
+    <button
+      class="auth-button"
+      id="authSubmit">
+      Anmelden
+    </button>
+
+
+    <div class="switch-auth">
+
+      <span id="switchText">
+        Noch kein Konto?
+      </span>
+
+      <button id="switchAuth">
+        Registrieren
+      </button>
 
     </div>
 
   </div>
 
+</div>
 
-  <script src="script.js"></script>
+
+
+<script src="script.js"></script>
 
 </body>
 </html>
