@@ -1,91 +1,42 @@
 // ==========================================
-// SAFI AI
+// SAFI AI — SCRIPT
 // ==========================================
 
-
-// ==========================================
-// DEIN RENDER SERVER
-// ==========================================
-//
-// HIER deine Render-URL eintragen.
-//
-// Beispiel:
-// https://safi-ai-server-xxxx.onrender.com
-//
-
-const SERVER_URL =
-  "DEINE-RENDER-URL";
+// Der Server läuft auf derselben Adresse
+// wie deine Website.
+const SERVER_URL = "";
 
 
 // ==========================================
 // ELEMENTE
 // ==========================================
 
-const chat =
-  document.getElementById("chat");
+const chat = document.getElementById("chat");
+const messageInput = document.getElementById("messageInput");
+const sendButton = document.getElementById("sendButton");
+const micButton = document.getElementById("micButton");
+const newChatButton = document.getElementById("newChatButton");
 
-const messageInput =
-  document.getElementById("messageInput");
+const loginButton = document.getElementById("loginButton");
+const registerButton = document.getElementById("registerButton");
+const topLoginButton = document.getElementById("topLoginButton");
 
-const sendButton =
-  document.getElementById("sendButton");
+const authModal = document.getElementById("authModal");
+const closeModal = document.getElementById("closeModal");
 
-const micButton =
-  document.getElementById("micButton");
+const authTitle = document.getElementById("authTitle");
+const authSubtitle = document.getElementById("authSubtitle");
+const authSubmit = document.getElementById("authSubmit");
 
-const newChatButton =
-  document.getElementById("newChatButton");
+const switchAuth = document.getElementById("switchAuth");
+const switchText = document.getElementById("switchText");
 
+const nameContainer = document.getElementById("nameContainer");
+const nameInput = document.getElementById("nameInput");
+const emailInput = document.getElementById("emailInput");
+const passwordInput = document.getElementById("passwordInput");
 
-// Login
-
-const loginButton =
-  document.getElementById("loginButton");
-
-const registerButton =
-  document.getElementById("registerButton");
-
-const topLoginButton =
-  document.getElementById("topLoginButton");
-
-
-// Modal
-
-const authModal =
-  document.getElementById("authModal");
-
-const closeModal =
-  document.getElementById("closeModal");
-
-const authTitle =
-  document.getElementById("authTitle");
-
-const authSubtitle =
-  document.getElementById("authSubtitle");
-
-const authSubmit =
-  document.getElementById("authSubmit");
-
-const switchAuth =
-  document.getElementById("switchAuth");
-
-const switchText =
-  document.getElementById("switchText");
-
-const nameContainer =
-  document.getElementById("nameContainer");
-
-const nameInput =
-  document.getElementById("nameInput");
-
-const emailInput =
-  document.getElementById("emailInput");
-
-const passwordInput =
-  document.getElementById("passwordInput");
-
-const themeButton =
-  document.getElementById("themeButton");
+const themeButton = document.getElementById("themeButton");
 
 
 // ==========================================
@@ -101,62 +52,44 @@ let previousInteractionId = null;
 
 function addMessage(text, sender) {
 
-  const message =
-    document.createElement("div");
+  const message = document.createElement("div");
 
-  message.className =
-    "message " + sender;
+  message.className = "message " + sender;
 
+  const avatar = document.createElement("div");
 
-  const avatar =
-    document.createElement("div");
-
-  avatar.className =
-    "message-avatar";
+  avatar.className = "message-avatar";
 
   avatar.textContent =
-    sender === "user"
-      ? "Du"
-      : "S";
+    sender === "user" ? "Du" : "S";
 
+  const content = document.createElement("div");
 
-  const content =
-    document.createElement("div");
+  content.className = "message-content";
 
-  content.className =
-    "message-content";
-
-  content.textContent =
-    text;
-
+  content.textContent = text;
 
   message.appendChild(avatar);
-
   message.appendChild(content);
 
   chat.appendChild(message);
 
-
-  chat.scrollTop =
-    chat.scrollHeight;
+  chat.scrollTop = chat.scrollHeight;
 }
 
 
 // ==========================================
-// TYPING
+// TYPING ANIMATION
 // ==========================================
 
 function showTyping() {
 
-  const typing =
-    document.createElement("div");
+  removeTyping();
 
-  typing.className =
-    "message";
+  const typing = document.createElement("div");
 
-  typing.id =
-    "typing";
-
+  typing.className = "message";
+  typing.id = "typing";
 
   typing.innerHTML = `
     <div class="message-avatar">S</div>
@@ -164,33 +97,26 @@ function showTyping() {
     <div class="message-content">
 
       <div class="typing">
-
         <span></span>
         <span></span>
         <span></span>
-
       </div>
 
     </div>
   `;
 
-
   chat.appendChild(typing);
 
-  chat.scrollTop =
-    chat.scrollHeight;
+  chat.scrollTop = chat.scrollHeight;
 }
 
 
 function removeTyping() {
 
-  const typing =
-    document.getElementById("typing");
+  const typing = document.getElementById("typing");
 
   if (typing) {
-
     typing.remove();
-
   }
 }
 
@@ -202,14 +128,13 @@ function removeTyping() {
 async function sendMessage(text = null) {
 
   const message =
-    text ||
-    messageInput.value.trim();
+    text !== null
+      ? text.trim()
+      : messageInput.value.trim();
 
 
   if (!message) {
-
     return;
-
   }
 
 
@@ -219,61 +144,62 @@ async function sendMessage(text = null) {
     document.getElementById("welcome");
 
   if (welcome) {
-
     welcome.remove();
-
   }
 
 
   // User Nachricht
 
-  addMessage(
-    message,
-    "user"
-  );
+  addMessage(message, "user");
 
 
-  // Input löschen
+  // Eingabefeld leeren
 
   messageInput.value = "";
 
-  messageInput.style.height =
-    "auto";
+  messageInput.style.height = "auto";
 
 
-  sendButton.disabled =
-    true;
+  // Button deaktivieren
 
+  sendButton.disabled = true;
+
+
+  // Schreibanimation
 
   showTyping();
 
 
   try {
 
-    const response =
-      await fetch(
-        SERVER_URL + "/chat",
-        {
-          method: "POST",
+    const response = await fetch(
+      SERVER_URL + "/chat",
+      {
+        method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-          body: JSON.stringify({
+        body: JSON.stringify({
+          message: message,
+          previousInteractionId:
+            previousInteractionId
+        })
+      }
+    );
 
-            message:
-              message,
 
-            previousInteractionId:
-              previousInteractionId
+    // Prüfen, ob Server überhaupt geantwortet hat
 
-          })
-
-        }
+    if (!response) {
+      throw new Error(
+        "Keine Antwort vom Server."
       );
+    }
 
+
+    // Antwort als JSON lesen
 
     const data =
       await response.json();
@@ -282,17 +208,34 @@ async function sendMessage(text = null) {
     removeTyping();
 
 
+    // Serverfehler
+
     if (!response.ok) {
 
       throw new Error(
         data.error ||
-        "Serverfehler"
+        "Serverfehler " +
+        response.status
       );
 
     }
 
 
-    // KI Antwort
+    // Keine Antwort
+
+    if (
+      !data.reply ||
+      typeof data.reply !== "string"
+    ) {
+
+      throw new Error(
+        "Die KI hat keine Antwort zurückgegeben."
+      );
+
+    }
+
+
+    // KI Antwort anzeigen
 
     addMessage(
       data.reply,
@@ -300,11 +243,14 @@ async function sendMessage(text = null) {
     );
 
 
-    // Conversation speichern
+    // Interaction speichern
 
-    previousInteractionId =
-      data.interactionId;
+    if (data.interactionId) {
 
+      previousInteractionId =
+        data.interactionId;
+
+    }
 
   } catch (error) {
 
@@ -325,11 +271,9 @@ async function sendMessage(text = null) {
   }
 
 
-  sendButton.disabled =
-    false;
+  sendButton.disabled = false;
 
   messageInput.focus();
-
 }
 
 
@@ -340,9 +284,7 @@ async function sendMessage(text = null) {
 sendButton.addEventListener(
   "click",
   () => {
-
     sendMessage();
-
   }
 );
 
@@ -353,7 +295,7 @@ sendButton.addEventListener(
 
 messageInput.addEventListener(
   "keydown",
-  event => {
+  (event) => {
 
     if (
       event.key === "Enter" &&
@@ -371,7 +313,7 @@ messageInput.addEventListener(
 
 
 // ==========================================
-// TEXTAREA
+// TEXTAREA AUTO HEIGHT
 // ==========================================
 
 messageInput.addEventListener(
@@ -397,15 +339,16 @@ messageInput.addEventListener(
 
 document
   .querySelectorAll(".suggestion")
-  .forEach(button => {
+  .forEach((button) => {
 
     button.addEventListener(
       "click",
       () => {
 
-        sendMessage(
-          button.textContent.trim()
-        );
+        const text =
+          button.textContent.trim();
+
+        sendMessage(text);
 
       }
     );
@@ -421,8 +364,7 @@ newChatButton.addEventListener(
   "click",
   () => {
 
-    previousInteractionId =
-      null;
+    previousInteractionId = null;
 
     location.reload();
 
@@ -438,9 +380,7 @@ const SpeechRecognition =
   window.SpeechRecognition ||
   window.webkitSpeechRecognition;
 
-
 let recognition = null;
-
 let recording = false;
 
 
@@ -449,14 +389,11 @@ if (SpeechRecognition) {
   recognition =
     new SpeechRecognition();
 
-
   recognition.lang =
     "de-DE";
 
-
   recognition.continuous =
     false;
-
 
   recognition.interimResults =
     false;
@@ -465,8 +402,7 @@ if (SpeechRecognition) {
   recognition.onstart =
     () => {
 
-      recording =
-        true;
+      recording = true;
 
       micButton.classList.add(
         "recording"
@@ -476,16 +412,13 @@ if (SpeechRecognition) {
 
 
   recognition.onresult =
-    event => {
+    (event) => {
 
       const transcript =
-        event.results[0][0]
-          .transcript;
-
+        event.results[0][0].transcript;
 
       messageInput.value =
         transcript;
-
 
       messageInput.focus();
 
@@ -495,8 +428,7 @@ if (SpeechRecognition) {
   recognition.onend =
     () => {
 
-      recording =
-        false;
+      recording = false;
 
       micButton.classList.remove(
         "recording"
@@ -508,8 +440,7 @@ if (SpeechRecognition) {
   recognition.onerror =
     () => {
 
-      recording =
-        false;
+      recording = false;
 
       micButton.classList.remove(
         "recording"
@@ -555,99 +486,80 @@ if (SpeechRecognition) {
 // LOGIN
 // ==========================================
 
-let registerMode =
-  false;
+let registerMode = false;
 
 
 function openLogin() {
 
-  registerMode =
-    false;
-
+  registerMode = false;
 
   authModal.classList.remove(
     "hidden"
   );
 
-
   authTitle.textContent =
     "Willkommen zurück";
-
 
   authSubtitle.textContent =
     "Melde dich bei deinem Safi AI Konto an.";
 
-
   authSubmit.textContent =
     "Anmelden";
-
 
   switchText.textContent =
     "Noch kein Konto?";
 
-
   switchAuth.textContent =
     "Registrieren";
-
 
   nameContainer.classList.add(
     "hidden"
   );
-
 }
 
 
 function openRegister() {
 
-  registerMode =
-    true;
-
+  registerMode = true;
 
   authModal.classList.remove(
     "hidden"
   );
 
-
   authTitle.textContent =
     "Erstelle dein Konto";
-
 
   authSubtitle.textContent =
     "Registriere dich kostenlos bei Safi AI.";
 
-
   authSubmit.textContent =
     "Konto erstellen";
-
 
   switchText.textContent =
     "Du hast bereits ein Konto?";
 
-
   switchAuth.textContent =
     "Anmelden";
-
 
   nameContainer.classList.remove(
     "hidden"
   );
-
 }
 
 
-// Buttons
+// ==========================================
+// LOGIN BUTTONS
+// ==========================================
 
 loginButton.addEventListener(
   "click",
   openLogin
 );
 
-
 topLoginButton.addEventListener(
   "click",
   openLogin
 );
-
 
 registerButton.addEventListener(
   "click",
@@ -673,7 +585,7 @@ closeModal.addEventListener(
 
 authModal.addEventListener(
   "click",
-  event => {
+  (event) => {
 
     if (
       event.target === authModal
@@ -690,7 +602,7 @@ authModal.addEventListener(
 
 
 // ==========================================
-// LOGIN <-> REGISTRIERUNG
+// LOGIN ↔ REGISTRIERUNG
 // ==========================================
 
 switchAuth.addEventListener(
@@ -726,10 +638,7 @@ authSubmit.addEventListener(
       passwordInput.value.trim();
 
 
-    if (
-      !email ||
-      !password
-    ) {
+    if (!email || !password) {
 
       alert(
         "Bitte E-Mail und Passwort eingeben."
@@ -760,13 +669,8 @@ authSubmit.addEventListener(
       localStorage.setItem(
         "safiUser",
         JSON.stringify({
-
-          name:
-            name,
-
-          email:
-            email
-
+          name: name,
+          email: email
         })
       );
 
@@ -775,16 +679,12 @@ authSubmit.addEventListener(
         "Konto wurde erstellt!"
       );
 
-
     } else {
 
       localStorage.setItem(
         "safiUser",
         JSON.stringify({
-
-          email:
-            email
-
+          email: email
         })
       );
 
@@ -802,9 +702,7 @@ authSubmit.addEventListener(
 
 
     emailInput.value = "";
-
     passwordInput.value = "";
-
     nameInput.value = "";
 
   }
