@@ -23,33 +23,31 @@ app.use(cors());
 
 app.use(express.json({ limit: "1mb" }));
 
-// Website-Dateien ausliefern
-app.use(express.static(path.join(__dirname, "public")));
+// Dateien aus dem Hauptordner laden
+app.use(express.static(__dirname));
 
 // ==========================================
 // GEMINI
 // ==========================================
 
-const apiKey = process.env.GEMINI_API_KEY;
-
 let ai = null;
 
-if (!apiKey) {
-  console.error("FEHLER: GEMINI_API_KEY wurde nicht gefunden!");
-} else {
+if (process.env.GEMINI_API_KEY) {
   ai = new GoogleGenAI({
-    apiKey: apiKey
+    apiKey: process.env.GEMINI_API_KEY
   });
 
-  console.log("Gemini API wurde geladen.");
+  console.log("Gemini API ist verbunden.");
+} else {
+  console.error("WARNUNG: GEMINI_API_KEY fehlt.");
 }
 
 // ==========================================
-// STARTSEITE
+// WEBSITE
 // ==========================================
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 // ==========================================
@@ -61,7 +59,7 @@ app.get("/status", (req, res) => {
     online: true,
     service: "Safi AI",
     version: "3.0.0",
-    gemini: !!ai
+    gemini: ai !== null
   });
 });
 
@@ -87,7 +85,7 @@ app.post("/chat", async (req, res) => {
     if (!ai) {
       return res.status(500).json({
         success: false,
-        error: "GEMINI_API_KEY wurde auf dem Server nicht eingerichtet."
+        error: "GEMINI_API_KEY fehlt auf dem Server."
       });
     }
 
@@ -98,15 +96,12 @@ app.post("/chat", async (req, res) => {
 
       config: {
         systemInstruction:
-          "Du bist Safi AI, ein intelligenter, freundlicher " +
-          "und hilfreicher KI-Assistent. " +
-          "Antworte standardmäßig auf Deutsch, wenn der Nutzer " +
-          "Deutsch schreibt. " +
-          "Antworte natürlich, verständlich und direkt. " +
-          "Bei Mathematik erkläre den Rechenweg verständlich. " +
-          "Bei Programmierung gib sauberen und funktionierenden " +
-          "Code aus und erkläre wichtige Teile kurz. " +
-          "Wenn eine Frage unklar ist, stelle eine kurze Rückfrage."
+          "Du bist Safi AI, ein intelligenter, " +
+          "freundlicher und hilfreicher KI-Assistent. " +
+          "Antworte auf Deutsch, wenn der Nutzer Deutsch schreibt. " +
+          "Antworte verständlich und direkt. " +
+          "Bei Mathematik erkläre den Rechenweg. " +
+          "Bei Programmierung gib sauberen Code aus."
       }
     });
 
@@ -131,15 +126,13 @@ app.post("/chat", async (req, res) => {
 });
 
 // ==========================================
-// FALLBACK
+// 404
 // ==========================================
 
 app.use((req, res) => {
-
   res.status(404).json({
     error: "Diese Seite wurde nicht gefunden."
   });
-
 });
 
 // ==========================================
@@ -147,7 +140,5 @@ app.use((req, res) => {
 // ==========================================
 
 app.listen(PORT, "0.0.0.0", () => {
-
   console.log(`Safi AI läuft auf Port ${PORT}`);
-
 });
