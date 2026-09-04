@@ -1,16 +1,19 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
 
 const app = express();
 
-
-// ==========================================
-// EINSTELLUNGEN
-// ==========================================
-
 const PORT = process.env.PORT || 3000;
 
+// ==========================================
+// DATEIPFADE
+// ==========================================
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ==========================================
 // MIDDLEWARE
@@ -18,226 +21,133 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-app.use(
-  express.json({
-    limit: "1mb"
-  })
-);
+app.use(express.json({ limit: "1mb" }));
 
+// Website-Dateien ausliefern
+app.use(express.static(path.join(__dirname, "public")));
 
 // ==========================================
 // GEMINI
 // ==========================================
 
-if (!process.env.GEMINI_API_KEY) {
+const apiKey = process.env.GEMINI_API_KEY;
 
-  console.error(
-    "FEHLER: GEMINI_API_KEY wurde nicht gefunden!"
-  );
+let ai = null;
 
+if (!apiKey) {
+  console.error("FEHLER: GEMINI_API_KEY wurde nicht gefunden!");
+} else {
+  ai = new GoogleGenAI({
+    apiKey: apiKey
+  });
+
+  console.log("Gemini API wurde geladen.");
 }
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
-});
-
 
 // ==========================================
 // STARTSEITE
 // ==========================================
 
 app.get("/", (req, res) => {
-
-  res.json({
-    status: "online",
-    message: "Safi AI läuft!",
-    version: "2.0.0"
-  });
-
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
 
 // ==========================================
 // STATUS
 // ==========================================
 
 app.get("/status", (req, res) => {
-
   res.json({
     online: true,
     service: "Safi AI",
-    model: "gemini-3.8-flash"
+    version: "3.0.0",
+    gemini: !!ai
   });
-
 });
-
 
 // ==========================================
 // CHAT
 // ==========================================
 
 app.post("/chat", async (req, res) => {
-
   try {
-
-    const {
-      message,
-      previousInteractionId
-    } = req.body;
-
-
-    // Nachricht überprüfen
+    const { message } = req.body;
 
     if (
       !message ||
       typeof message !== "string" ||
       !message.trim()
     ) {
-
       return res.status(400).json({
-
-        error:
-          "Keine gültige Nachricht erhalten."
-
+        success: false,
+        error: "Keine gültige Nachricht erhalten."
       });
-
     }
 
-
-    // ======================================
-    // GEMINI REQUEST
-    // ======================================
-
-    const request = {
-
-      model:
-        "gemini-3.8-flash",
-
-      input:
-        message.trim(),
-
-      system_instruction:
-
-        "Du bist Safi AI, ein intelligenter, " +
-        "freundlicher und hilfreicher KI-Assistent. " +
-
-        "Antworte standardmäßig auf Deutsch, " +
-        "wenn der Nutzer Deutsch schreibt. " +
-
-        "Antworte natürlich und verständlich. " +
-
-        "Bei Mathematik zeige den Rechenweg " +
-        "und erkläre ihn verständlich. " +
-
-        "Bei Programmierung gib sauberen, " +
-        "funktionierenden Code aus und erkläre " +
-        "wichtige Teile kurz. " +
-
-        "Wenn eine Frage unklar ist, stelle " +
-        "eine kurze Rückfrage. " +
-
-        "Versuche immer, die eigentliche Frage " +
-        "des Nutzers direkt zu beantworten."
-
-    };
-
-
-    // ======================================
-    // VORHERIGE UNTERHALTUNG
-    // ======================================
-
-    if (
-      previousInteractionId &&
-      typeof previousInteractionId === "string"
-    ) {
-
-      request.previous_interaction_id =
-        previousInteractionId;
-
+    if (!ai) {
+      return res.status(500).json({
+        success: false,
+        error: "GEMINI_API_KEY wurde auf dem Server nicht eingerichtet."
+      });
     }
 
+    const response = await ai.models.generateContent({
+      model: "gemini-3.8-flash",
 
-    // ======================================
-    // KI ANFRAGE
-    // ======================================
+      contents: message.trim(),
 
-    const interaction =
-      await ai.interactions.create(
-        request
-      );
-
-
-    // ======================================
-    // ANTWORT
-    // ======================================
-
-    const reply =
-      interaction.output_text ||
-      "Ich konnte gerade keine Antwort erzeugen.";
-
-
-    res.json({
-
-      success: true,
-
-      reply:
-        reply,
-
-      interactionId:
-        interaction.id
-
+      config: {
+        systemInstruction:
+          "Du bist Safi AI, ein intelligenter, freundlicher " +
+          "und hilfreicher KI-Assistent. " +
+          "Antworte standardmäßig auf Deutsch, wenn der Nutzer " +
+          "Deutsch schreibt. " +
+          "Antworte natürlich, verständlich und direkt. " +
+          "Bei Mathematik erkläre den Rechenweg verständlich. " +
+          "Bei Programmierung gib sauberen und funktionierenden " +
+          "Code aus und erkläre wichtige Teile kurz. " +
+          "Wenn eine Frage unklar ist, stelle eine kurze Rückfrage."
+      }
     });
 
+    const reply =
+      response.text ||
+      "Ich konnte gerade keine Antwort erzeugen.";
+
+    res.json({
+      success: true,
+      reply: reply
+    });
 
   } catch (error) {
 
-    console.error(
-      "Safi AI Fehler:",
-      error
-    );
-
+    console.error("Safi AI Fehler:", error);
 
     res.status(500).json({
-
       success: false,
-
-      error:
-        "Safi AI konnte gerade keine Antwort erzeugen."
-
+      error: "Safi AI konnte gerade keine Antwort erzeugen."
     });
-
   }
-
 });
 
-
 // ==========================================
-// 404
+// FALLBACK
 // ==========================================
 
 app.use((req, res) => {
 
   res.status(404).json({
-
-    error:
-      "Diese Seite wurde nicht gefunden."
-
+    error: "Diese Seite wurde nicht gefunden."
   });
 
 });
-
 
 // ==========================================
 // SERVER START
 // ==========================================
 
-app.listen(
-  PORT,
-  () => {
+app.listen(PORT, "0.0.0.0", () => {
 
-    console.log(
-      `Safi AI läuft auf Port ${PORT}`
-    );
+  console.log(`Safi AI läuft auf Port ${PORT}`);
 
-  }
-);
+});
