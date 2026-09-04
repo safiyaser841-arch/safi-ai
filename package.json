@@ -1,7 +1,7 @@
 {
-  "name": "safi-ai-server",
-  "version": "1.0.0",
-  "description": "Safi AI Server",
+  "name": "safi-ai",
+  "version": "2.0.0",
+  "description": "Safi AI - Intelligenter KI-Assistent",
   "type": "module",
   "main": "server.js",
   "scripts": {
