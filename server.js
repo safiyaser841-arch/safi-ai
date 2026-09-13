@@ -2,197 +2,411 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs/promises";
+import os from "os";
+import crypto from "crypto";
+import multer from "multer";
 import { GoogleGenAI } from "@google/genai";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-
 const PORT = process.env.PORT || 10000;
-const API_KEY = process.env.GEMINI_API_KEY;
 
-app.use(cors());
-app.use(express.json({ limit: "1mb" }));
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-// ==========================================
-// GEMINI
-// ==========================================
-
-let ai = null;
-
-if (API_KEY) {
-  ai = new GoogleGenAI({
-    apiKey: API_KEY
-  });
-
-  console.log("Gemini API ist verbunden.");
-} else {
-  console.log("WARNUNG: GEMINI_API_KEY wurde nicht gefunden.");
+if (!GEMINI_API_KEY) {
+  console.error("❌ GEMINI_API_KEY fehlt!");
 }
 
-// ==========================================
-// FRONTEND
-// ==========================================
+const ai = GEMINI_API_KEY
+  ? new GoogleGenAI({ apiKey: GEMINI_API_KEY })
+  : null;
 
-app.use(express.static(__dirname));
+// --------------------------------------------------
+// MIDDLEWARE
+// --------------------------------------------------
+
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 20 * 1024 * 1024,
+    files: 5,
+  },
+});
+
+// --------------------------------------------------
+// BASIC ROUTES
+// --------------------------------------------------
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// ==========================================
-// STATUS
-// ==========================================
-
 app.get("/status", (req, res) => {
   res.json({
     online: true,
-    message: "Safi AI läuft!",
-    gemini: !!API_KEY,
-    version: "3.0.0"
+    service: "Safi AI",
+    version: "3.0.0",
+    gemini: Boolean(GEMINI_API_KEY),
+    time: new Date().toISOString(),
   });
 });
 
-// ==========================================
-// CHAT
-// ==========================================
+app.get("/health", (req, res) => {
+  res.json({
+    ok: true,
+    game: "Safi AI",
+  });
+});
 
-app.post("/chat", async (req, res) => {
-  try {
-    const message = req.body?.message;
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
 
-    if (!message || typeof message !== "string") {
-      return res.status(400).json({
-        reply: "Bitte schreibe eine Nachricht."
-      });
-    }
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-    if (!ai) {
-      return res.status(500).json({
-        reply: "Safi AI ist noch nicht mit Gemini verbunden."
-      });
-    }
+function getErrorStatus(error) {
+  return (
+    error?.status ||
+    error?.statusCode ||
+    error?.response?.status ||
+    500
+  );
+}
 
-    const cleanMessage = message.trim();
+function isRetryableError(error) {
+  const status = getErrorStatus(error);
 
-    if (!cleanMessage) {
-      return res.status(400).json({
-        reply: "Bitte schreibe eine Nachricht."
-      });
-    }
+  const text = String(
+    error?.message ||
+      error?.error ||
+      ""
+  ).toLowerCase();
 
-    console.log("Neue Nachricht:", cleanMessage);
+  return (
+    status === 408 ||
+    status === 429 ||
+    status === 500 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504 ||
+    text.includes("timeout") ||
+    text.includes("temporarily") ||
+    text.includes("unavailable") ||
+    text.includes("overloaded") ||
+    text.includes("rate limit") ||
+    text.includes("resource exhausted")
+  );
+}
 
-    let response = null;
-    let lastError = null;
+// --------------------------------------------------
+// GEMINI REQUEST MIT RETRIES
+// --------------------------------------------------
 
-    // Erstes Modell
-    const models = [
-      "gemini-3.7-flash",
-      "gemini-3.8-flash"
-    ];
+async function createInteraction(input, previousInteractionId = null) {
+  if (!ai) {
+    throw new Error("Gemini API ist nicht konfiguriert.");
+  }
 
-    for (const model of models) {
+  const models = [
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
+  ];
+
+  let lastError = null;
+
+  for (const model of models) {
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        console.log(`Versuche Modell: ${model}`);
+        const options = {
+          model,
+          input,
+        };
 
-        response = await ai.models.generateContent({
-          model: model,
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text:
-                    `Du bist Safi AI, ein freundlicher und intelligenter KI-Assistent.
-
-Regeln:
-- Antworte auf Deutsch, wenn der Nutzer Deutsch schreibt.
-- Antworte auf Englisch, wenn der Nutzer Englisch schreibt.
-- Sei freundlich, klar und hilfreich.
-- Schreibe keine unnötig langen Antworten.
-- Wenn der Nutzer etwas nicht versteht, erkläre es einfach.
-- Bei Programmierfragen darfst du vollständigen Code liefern.
-
-Nutzer:
-${cleanMessage}`
-                }
-              ]
-            }
-          ],
-          config: {
-            temperature: 0.7,
-            maxOutputTokens: 2048
-          }
-        });
-
-        if (response) {
-          console.log(`Modell ${model} erfolgreich.`);
-          break;
+        if (previousInteractionId) {
+          options.previous_interaction_id =
+            previousInteractionId;
         }
 
+        const result = await ai.interactions.create(options);
+
+        return result;
       } catch (error) {
         lastError = error;
 
-        console.log(
-          `Modell ${model} fehlgeschlagen:`,
+        console.error(
+          `Gemini Fehler | Modell: ${model} | Versuch: ${
+            attempt + 1
+          }`,
           error?.message || error
         );
+
+        if (!isRetryableError(error)) {
+          break;
+        }
+
+        await sleep(800 * Math.pow(2, attempt));
+      }
+    }
+  }
+
+  throw lastError || new Error("Gemini-Anfrage fehlgeschlagen.");
+}
+
+// --------------------------------------------------
+// FILE → GEMINI INPUT
+// --------------------------------------------------
+
+async function uploadFileToGemini(file) {
+  const tempName = `${crypto.randomUUID()}-${file.originalname}`;
+  const tempPath = path.join(os.tmpdir(), tempName);
+
+  try {
+    await fs.writeFile(tempPath, file.buffer);
+
+    const uploaded = await ai.files.upload({
+      file: tempPath,
+      config: {
+        mimeType: file.mimetype,
+      },
+    });
+
+    return uploaded;
+  } finally {
+    try {
+      await fs.unlink(tempPath);
+    } catch {
+      // Datei war bereits gelöscht
+    }
+  }
+}
+
+function getGeminiFileType(mimeType) {
+  if (mimeType.startsWith("image/")) {
+    return "image";
+  }
+
+  if (mimeType.startsWith("audio/")) {
+    return "audio";
+  }
+
+  if (mimeType.startsWith("video/")) {
+    return "video";
+  }
+
+  return "document";
+}
+
+// --------------------------------------------------
+// CHAT
+// --------------------------------------------------
+
+app.post("/chat", upload.array("files", 5), async (req, res) => {
+  try {
+    if (!GEMINI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "GEMINI_API_KEY ist auf dem Server nicht gesetzt.",
+      });
+    }
+
+    const message =
+      typeof req.body.message === "string"
+        ? req.body.message.trim()
+        : "";
+
+    const previousInteractionId =
+      typeof req.body.previousInteractionId === "string"
+        ? req.body.previousInteractionId.trim()
+        : null;
+
+    const files = req.files || [];
+
+    if (!message && files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Bitte schreibe eine Nachricht oder füge eine Datei hinzu.",
+      });
+    }
+
+    // ----------------------------------------------
+    // INPUT AUFBAUEN
+    // ----------------------------------------------
+
+    const input = [];
+
+    if (message) {
+      input.push({
+        type: "text",
+        text: message,
+      });
+    }
+
+    // ----------------------------------------------
+    // DATEIEN HOCHLADEN
+    // ----------------------------------------------
+
+    for (const file of files) {
+      try {
+        console.log(
+          `📎 Datei wird verarbeitet: ${file.originalname}`
+        );
+
+        const uploaded = await uploadFileToGemini(file);
+
+        if (!uploaded?.uri) {
+          console.warn(
+            `⚠️ Keine Gemini-URI für ${file.originalname}`
+          );
+          continue;
+        }
+
+        const type = getGeminiFileType(file.mimetype);
+
+        input.push({
+          type,
+          uri: uploaded.uri,
+          mime_type:
+            uploaded.mimeType || file.mimetype,
+        });
+      } catch (fileError) {
+        console.error(
+          `❌ Datei konnte nicht verarbeitet werden: ${file.originalname}`,
+          fileError
+        );
+
+        return res.status(400).json({
+          success: false,
+          error: `Die Datei "${file.originalname}" konnte nicht verarbeitet werden.`,
+        });
       }
     }
 
-    if (!response) {
-      console.error("Alle Gemini-Modelle sind fehlgeschlagen.");
-      console.error(lastError);
+    // ----------------------------------------------
+    // GEMINI
+    // ----------------------------------------------
 
-      return res.status(503).json({
-        reply:
-          "Safi AI kann gerade keine Antwort von Gemini bekommen. Bitte versuche es gleich noch einmal."
-      });
-    }
+    const interaction = await createInteraction(
+      input,
+      previousInteractionId
+    );
 
-    const reply =
-      response.text ||
-      response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+    const outputText =
+      interaction?.output_text ||
+      interaction?.output
+        ?.filter((item) => item?.type === "text")
+        ?.map((item) => item?.text || "")
+        ?.join("\n") ||
       "";
 
-    if (!reply) {
-      return res.status(500).json({
-        reply: "Safi AI hat keine Antwort erhalten."
+    if (!outputText.trim()) {
+      return res.status(502).json({
+        success: false,
+        error: "Safi AI hat keine Textantwort zurückgegeben.",
       });
     }
 
-    console.log("Safi AI Antwort erhalten.");
+    console.log("✅ Safi AI Antwort erfolgreich");
 
     return res.json({
-      reply: reply
+      success: true,
+      reply: outputText,
+      interactionId:
+        interaction?.id || null,
+      model:
+        interaction?.model || null,
     });
-
   } catch (error) {
-    console.error("Safi AI Fehler:", error);
+    console.error("❌ CHAT FEHLER:", error);
+
+    const status = getErrorStatus(error);
+
+    if (status === 429) {
+      return res.status(429).json({
+        success: false,
+        error:
+          "Safi AI ist gerade stark ausgelastet. Bitte versuche es gleich noch einmal.",
+      });
+    }
+
+    if (status === 401 || status === 403) {
+      return res.status(500).json({
+        success: false,
+        error:
+          "Der Gemini API-Schlüssel funktioniert nicht korrekt.",
+      });
+    }
 
     return res.status(500).json({
-      reply:
-        "Es ist ein Fehler aufgetreten. Bitte versuche es noch einmal."
+      success: false,
+      error:
+        "Safi AI konnte die Anfrage gerade nicht verarbeiten. Bitte versuche es erneut.",
     });
   }
 });
 
-// ==========================================
+// --------------------------------------------------
 // 404
-// ==========================================
+// --------------------------------------------------
 
 app.use((req, res) => {
   res.status(404).json({
-    error: "Route nicht gefunden"
+    success: false,
+    error: "Route nicht gefunden.",
   });
 });
 
-// ==========================================
-// SERVER START
-// ==========================================
+// --------------------------------------------------
+// GLOBAL ERROR HANDLER
+// --------------------------------------------------
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Safi AI läuft auf Port ${PORT}`);
+app.use((error, req, res, next) => {
+  console.error("❌ SERVER ERROR:", error);
+
+  if (error instanceof multer.MulterError) {
+    return res.status(400).json({
+      success: false,
+      error:
+        error.code === "LIMIT_FILE_SIZE"
+          ? "Die Datei ist zu groß. Maximal 20 MB."
+          : "Die Datei konnte nicht hochgeladen werden.",
+    });
+  }
+
+  res.status(500).json({
+    success: false,
+    error: "Interner Serverfehler.",
+  });
+});
+
+// --------------------------------------------------
+// SERVER START
+// --------------------------------------------------
+
+app.listen(PORT, () => {
+  console.log("");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("        🤖 SAFI AI");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log(`🚀 Safi AI läuft auf Port ${PORT}`);
+  console.log(`🌐 Umgebung: ${process.env.NODE_ENV || "production"}`);
+  console.log(
+    `🔑 Gemini API: ${GEMINI_API_KEY ? "verbunden" : "FEHLT"}`
+  );
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("");
 });
