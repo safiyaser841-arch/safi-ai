@@ -2,18 +2,17 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   >
 
+  <title>Safi AI</title>
+
   <meta
     name="description"
-    content="Safi AI – dein intelligenter KI-Assistent"
+    content="Safi AI – dein moderner KI-Assistent"
   >
-
-  <title>Safi AI</title>
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -39,13 +38,14 @@
         <button
           class="new-chat-button"
           id="newChatButton"
+          type="button"
         >
           <span>＋</span>
-          Neue Unterhaltung
+          Neuer Chat
         </button>
 
         <div class="history-title">
-          Unterhaltungen
+          Chats
         </div>
 
         <div
@@ -59,20 +59,20 @@
 
         <button
           class="sidebar-button"
-          id="settingsButton"
+          id="accountButton"
+          type="button"
         >
-          <span>⚙</span>
-          Einstellungen
+          <span>◉</span>
+          Konto
         </button>
 
         <button
           class="sidebar-button"
-          id="accountButton"
+          id="settingsButton"
+          type="button"
         >
-          <span>○</span>
-          <span id="accountButtonText">
-            Anmelden
-          </span>
+          <span>⚙</span>
+          Einstellungen
         </button>
 
       </div>
@@ -91,6 +91,7 @@
           <button
             class="mobile-menu"
             id="mobileMenu"
+            type="button"
           >
             ☰
           </button>
@@ -106,16 +107,13 @@
 
         </div>
 
-        <div class="topbar-right">
-
-          <button
-            class="topbar-button"
-            id="clearChatButton"
-          >
-            Unterhaltung löschen
-          </button>
-
-        </div>
+        <button
+          class="topbar-button"
+          id="clearChatButton"
+          type="button"
+        >
+          Chat leeren
+        </button>
 
       </header>
 
@@ -138,57 +136,68 @@
           >
 
             <div class="welcome-small">
-              INTELLIGENT ASSISTANT
+              SAFI AI
             </div>
 
             <h1>
-              Was möchtest<br>
-              du wissen?
+              Was möchtest du<br>
+              heute wissen?
             </h1>
 
             <p>
-              Schreibe Safi AI eine Nachricht.
-              Du kannst außerdem Bilder, Dateien
-              oder eine Sprachaufnahme hinzufügen.
+              Dein persönlicher KI-Assistent für Fragen,
+              Lernen, Programmieren, Ideen, Texte und vieles mehr.
             </p>
+
 
             <div class="suggestions">
 
               <button
                 class="suggestion"
+                type="button"
                 data-prompt="Erkläre mir dieses Thema einfach und verständlich."
               >
-                <strong>Etwas erklären</strong>
-                <span>Ein Thema einfach verstehen</span>
+                <strong>📚 Lernen</strong>
+                <span>Erkläre mir ein Thema einfach.</span>
               </button>
 
               <button
                 class="suggestion"
-                data-prompt="Hilf mir beim Programmieren und erkläre mir den Code Schritt für Schritt."
+                type="button"
+                data-prompt="Hilf mir beim Programmieren und schreibe den passenden Code."
               >
-                <strong>Programmieren</strong>
-                <span>Code erstellen oder verstehen</span>
+                <strong>💻 Programmieren</strong>
+                <span>Schreibe oder verbessere Code.</span>
               </button>
 
               <button
                 class="suggestion"
-                data-prompt="Hilf mir bei meinen Hausaufgaben und erkläre den Lösungsweg."
+                type="button"
+                data-prompt="Gib mir kreative Ideen für ein neues Projekt."
               >
-                <strong>Hausaufgaben</strong>
-                <span>Schritt für Schritt lernen</span>
+                <strong>💡 Ideen</strong>
+                <span>Entwickle neue Ideen mit mir.</span>
               </button>
 
               <button
                 class="suggestion"
-                data-prompt="Fasse mir die wichtigsten Punkte dieses Themas übersichtlich zusammen."
+                type="button"
+                data-prompt="Hilf mir, einen guten Text zu schreiben."
               >
-                <strong>Zusammenfassen</strong>
-                <span>Wichtige Informationen kompakt</span>
+                <strong>✍️ Schreiben</strong>
+                <span>Texte erstellen und verbessern.</span>
               </button>
 
             </div>
 
           </div>
+
+
+          <!-- MESSAGES -->
+          <div
+            id="messages"
+            class="messages"
+          ></div>
 
         </div>
 
@@ -205,54 +214,60 @@
 
         <div class="composer">
 
+          <button
+            class="composer-button"
+            id="attachButton"
+            type="button"
+            title="Datei anhängen"
+          >
+            ＋
+          </button>
+
           <input
             type="file"
             id="fileInput"
-            multiple
             hidden
+            multiple
+            accept="image/*,.pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv"
           >
 
           <input
             type="file"
             id="imageInput"
-            accept="image/*"
-            multiple
             hidden
+            multiple
+            accept="image/*"
           >
-
-          <button
-            class="composer-button"
-            id="attachButton"
-            title="Datei hinzufügen"
-          >
-            ＋
-          </button>
 
           <button
             class="composer-button"
             id="imageButton"
+            type="button"
             title="Bild hinzufügen"
           >
             ▧
           </button>
 
-          <textarea
-            id="messageInput"
-            placeholder="Nachricht an Safi AI..."
-            rows="1"
-          ></textarea>
-
           <button
             class="composer-button microphone"
             id="micButton"
-            title="Sprachaufnahme"
+            type="button"
+            title="Sprachnachricht"
           >
             ●
           </button>
 
+          <textarea
+            id="messageInput"
+            rows="1"
+            placeholder="Nachricht an Safi AI..."
+            autocomplete="off"
+          ></textarea>
+
           <button
             class="send-button"
             id="sendButton"
+            type="button"
             title="Senden"
           >
             ↑
@@ -283,28 +298,31 @@
 
         <div>
           <div class="modal-small">
-            SAFI AI
+            SAFI AI ACCOUNT
           </div>
 
-          <h2>Konto</h2>
+          <h2>Dein Konto</h2>
         </div>
 
         <button
           class="close-button"
           data-close="accountModal"
+          type="button"
         >
           ×
         </button>
 
       </div>
 
-      <div id="accountLoggedOut">
+
+      <div id="loggedOutAccount">
 
         <div class="tabs">
 
           <button
             class="tab active"
             id="loginTab"
+            type="button"
           >
             Anmelden
           </button>
@@ -312,42 +330,111 @@
           <button
             class="tab"
             id="registerTab"
+            type="button"
           >
             Registrieren
           </button>
 
         </div>
 
-        <div class="form-group">
 
-          <label>E-Mail</label>
+        <!-- LOGIN -->
+        <form id="loginForm">
 
-          <input
-            type="email"
-            id="emailInput"
-            placeholder="name@example.com"
+          <div class="form-group">
+
+            <label for="loginEmail">
+              E-Mail
+            </label>
+
+            <input
+              id="loginEmail"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="name@example.com"
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="loginPassword">
+              Passwort
+            </label>
+
+            <input
+              id="loginPassword"
+              type="password"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+            >
+
+          </div>
+
+
+          <button
+            class="primary-button"
+            type="submit"
           >
+            Anmelden
+          </button>
 
-        </div>
+        </form>
 
-        <div class="form-group">
 
-          <label>Passwort</label>
-
-          <input
-            type="password"
-            id="passwordInput"
-            placeholder="Passwort"
-          >
-
-        </div>
-
-        <button
-          class="primary-button"
-          id="accountSubmit"
+        <!-- REGISTER -->
+        <form
+          id="registerForm"
+          class="hidden"
         >
-          Anmelden
-        </button>
+
+          <div class="form-group">
+
+            <label for="registerEmail">
+              E-Mail
+            </label>
+
+            <input
+              id="registerEmail"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="name@example.com"
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="registerPassword">
+              Passwort
+            </label>
+
+            <input
+              id="registerPassword"
+              type="password"
+              required
+              minlength="6"
+              autocomplete="new-password"
+              placeholder="Mindestens 6 Zeichen"
+            >
+
+          </div>
+
+
+          <button
+            class="primary-button"
+            type="submit"
+          >
+            Konto erstellen
+          </button>
+
+        </form>
+
 
         <div
           class="form-message"
@@ -356,19 +443,24 @@
 
       </div>
 
+
+      <!-- LOGGED IN -->
       <div
-        id="accountLoggedIn"
+        id="loggedInAccount"
         class="hidden"
       >
 
         <div class="profile-box">
 
-          <div class="profile-avatar">
+          <div
+            class="profile-avatar"
+            id="profileAvatar"
+          >
             S
           </div>
 
           <div>
-            <strong id="loggedUserEmail">
+            <strong id="profileEmail">
               -
             </strong>
 
@@ -380,8 +472,9 @@
         </div>
 
         <button
-          class="secondary-button"
+          class="danger-button"
           id="logoutButton"
+          type="button"
         >
           Abmelden
         </button>
@@ -414,40 +507,51 @@
         <button
           class="close-button"
           data-close="settingsModal"
+          type="button"
         >
           ×
         </button>
 
       </div>
 
+
       <div class="setting">
 
         <div>
-          <strong>Darstellung</strong>
-          <span>Helles oder dunkles Design</span>
+          <strong>Design</strong>
+
+          <span>
+            Dunkles Safi-AI-Design
+          </span>
         </div>
 
         <button
           class="toggle-button"
           id="themeButton"
+          type="button"
         >
           Dunkel
         </button>
 
       </div>
 
+
       <div class="setting">
 
         <div>
-          <strong>Unterhaltungen</strong>
-          <span>Gespeicherte Chats löschen</span>
+          <strong>Chats speichern</strong>
+
+          <span>
+            Chats werden lokal im Browser gespeichert.
+          </span>
         </div>
 
         <button
-          class="danger-button"
-          id="deleteAllChats"
+          class="toggle-button"
+          id="storageButton"
+          type="button"
         >
-          Löschen
+          Aktiv
         </button>
 
       </div>
@@ -457,6 +561,7 @@
   </div>
 
 
+  <!-- SCRIPT -->
   <script src="/script.js"></script>
 
 </body>
