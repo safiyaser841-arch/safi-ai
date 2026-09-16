@@ -2,82 +2,77 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Safi AI</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <meta
     name="description"
-    content="Safi AI – dein moderner KI-Assistent."
+    content="Safi AI – dein intelligenter KI-Assistent"
   >
 
-  <link rel="stylesheet" href="style.css">
+  <title>Safi AI</title>
+
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
 
-  <!-- =========================
-       APP
-  ========================== -->
-
   <div class="app">
 
     <!-- SIDEBAR -->
-
     <aside class="sidebar" id="sidebar">
 
       <div class="sidebar-top">
 
         <div class="brand">
-          <div class="brand-mark">S</div>
+          <div class="brand-logo">S</div>
 
-          <div class="brand-text">
-            <strong>Safi</strong>
-            <span>AI</span>
+          <div>
+            <div class="brand-name">Safi AI</div>
+            <div class="brand-version">AI ASSISTANT</div>
           </div>
         </div>
 
         <button
-          class="icon-button close-sidebar"
-          id="closeSidebar"
-          aria-label="Menü schließen"
+          class="new-chat-button"
+          id="newChatButton"
         >
-          ×
+          <span>＋</span>
+          Neue Unterhaltung
         </button>
 
-      </div>
-
-      <button class="new-chat-button" id="newChatButton">
-        <span>＋</span>
-        <span>Neue Unterhaltung</span>
-      </button>
-
-      <div class="sidebar-section">
-
-        <div class="section-label">
+        <div class="history-title">
           Unterhaltungen
         </div>
 
-        <div id="chatHistory" class="chat-history">
-
-          <div class="empty-history">
-            Noch keine Unterhaltungen
-          </div>
-
-        </div>
+        <div
+          class="chat-history"
+          id="chatHistory"
+        ></div>
 
       </div>
 
       <div class="sidebar-bottom">
 
-        <button class="sidebar-item" id="settingsButton">
+        <button
+          class="sidebar-button"
+          id="settingsButton"
+        >
           <span>⚙</span>
-          <span>Einstellungen</span>
+          Einstellungen
         </button>
 
-        <button class="sidebar-item" id="accountButton">
-          <span>◯</span>
-          <span id="accountLabel">Anmelden</span>
+        <button
+          class="sidebar-button"
+          id="accountButton"
+        >
+          <span>○</span>
+          <span id="accountButtonText">
+            Anmelden
+          </span>
         </button>
 
       </div>
@@ -86,42 +81,38 @@
 
 
     <!-- MAIN -->
-
     <main class="main">
 
-      <!-- HEADER -->
-
+      <!-- TOPBAR -->
       <header class="topbar">
 
-        <button
-          class="icon-button menu-button"
-          id="openSidebar"
-          aria-label="Menü"
-        >
-          ☰
-        </button>
-
-        <div class="model-name">
-          <strong>Safi AI</strong>
-          <span>Intelligenter Assistent</span>
-        </div>
-
-        <div class="topbar-actions">
+        <div class="topbar-left">
 
           <button
-            class="icon-button"
-            id="newChatTop"
-            title="Neue Unterhaltung"
+            class="mobile-menu"
+            id="mobileMenu"
           >
-            ＋
+            ☰
           </button>
 
+          <div class="topbar-title">
+            Safi AI
+          </div>
+
+          <div class="online-status">
+            <span></span>
+            Online
+          </div>
+
+        </div>
+
+        <div class="topbar-right">
+
           <button
-            class="icon-button"
-            id="themeButton"
-            title="Design"
+            class="topbar-button"
+            id="clearChatButton"
           >
-            ◐
+            Unterhaltung löschen
           </button>
 
         </div>
@@ -130,101 +121,106 @@
 
 
       <!-- CHAT -->
+      <section
+        class="chat-container"
+        id="chatContainer"
+      >
 
-      <section class="chat-area" id="chatArea">
+        <div
+          class="chat-content"
+          id="chatContent"
+        >
 
-        <div class="welcome" id="welcome">
+          <!-- WELCOME -->
+          <div
+            class="welcome"
+            id="welcome"
+          >
 
-          <div class="welcome-logo">
-            S
-          </div>
+            <div class="welcome-small">
+              INTELLIGENT ASSISTANT
+            </div>
 
-          <h1>
-            Was möchtest du wissen?
-          </h1>
+            <h1>
+              Was möchtest<br>
+              du wissen?
+            </h1>
 
-          <p>
-            Schreib Safi AI eine Nachricht oder füge
-            ein Bild, eine Datei oder eine Sprachaufnahme hinzu.
-          </p>
+            <p>
+              Schreibe Safi AI eine Nachricht.
+              Du kannst außerdem Bilder, Dateien
+              oder eine Sprachaufnahme hinzufügen.
+            </p>
 
-          <div class="suggestions">
+            <div class="suggestions">
 
-            <button
-              class="suggestion"
-              data-prompt="Erkläre mir dieses Thema einfach."
-            >
-              <span>✦</span>
-              <span>Etwas erklären</span>
-            </button>
+              <button
+                class="suggestion"
+                data-prompt="Erkläre mir dieses Thema einfach und verständlich."
+              >
+                <strong>Etwas erklären</strong>
+                <span>Ein Thema einfach verstehen</span>
+              </button>
 
-            <button
-              class="suggestion"
-              data-prompt="Hilf mir beim Programmieren."
-            >
-              <span>⌘</span>
-              <span>Programmieren</span>
-            </button>
+              <button
+                class="suggestion"
+                data-prompt="Hilf mir beim Programmieren und erkläre mir den Code Schritt für Schritt."
+              >
+                <strong>Programmieren</strong>
+                <span>Code erstellen oder verstehen</span>
+              </button>
 
-            <button
-              class="suggestion"
-              data-prompt="Hilf mir bei meinen Hausaufgaben."
-            >
-              <span>□</span>
-              <span>Hausaufgaben</span>
-            </button>
+              <button
+                class="suggestion"
+                data-prompt="Hilf mir bei meinen Hausaufgaben und erkläre den Lösungsweg."
+              >
+                <strong>Hausaufgaben</strong>
+                <span>Schritt für Schritt lernen</span>
+              </button>
 
-            <button
-              class="suggestion"
-              data-prompt="Fasse mir einen Text zusammen."
-            >
-              <span>≡</span>
-              <span>Zusammenfassen</span>
-            </button>
+              <button
+                class="suggestion"
+                data-prompt="Fasse mir die wichtigsten Punkte dieses Themas übersichtlich zusammen."
+              >
+                <strong>Zusammenfassen</strong>
+                <span>Wichtige Informationen kompakt</span>
+              </button>
+
+            </div>
 
           </div>
 
         </div>
 
-
-        <div
-          class="messages"
-          id="messages"
-        ></div>
-
       </section>
 
 
       <!-- COMPOSER -->
-
-      <div class="composer-wrapper">
+      <div class="composer-area">
 
         <div
-          class="attachment-preview"
-          id="attachmentPreview"
+          class="attachments"
+          id="attachments"
         ></div>
 
-        <form
-          class="composer"
-          id="composer"
-        >
+        <div class="composer">
+
+          <input
+            type="file"
+            id="fileInput"
+            multiple
+            hidden
+          >
 
           <input
             type="file"
             id="imageInput"
             accept="image/*"
-            hidden
-          >
-
-          <input
-            type="file"
-            id="fileInput"
-            accept=".pdf,.txt,.csv,.json,.doc,.docx,.js,.html,.css,.py,.md"
+            multiple
             hidden
           >
 
           <button
-            type="button"
             class="composer-button"
             id="attachButton"
             title="Datei hinzufügen"
@@ -233,7 +229,6 @@
           </button>
 
           <button
-            type="button"
             class="composer-button"
             id="imageButton"
             title="Bild hinzufügen"
@@ -243,14 +238,12 @@
 
           <textarea
             id="messageInput"
-            rows="1"
             placeholder="Nachricht an Safi AI..."
-            autocomplete="off"
+            rows="1"
           ></textarea>
 
           <button
-            type="button"
-            class="composer-button"
+            class="composer-button microphone"
             id="micButton"
             title="Sprachaufnahme"
           >
@@ -258,7 +251,6 @@
           </button>
 
           <button
-            type="submit"
             class="send-button"
             id="sendButton"
             title="Senden"
@@ -266,10 +258,10 @@
             ↑
           </button>
 
-        </form>
+        </div>
 
-        <div class="composer-note">
-          Safi AI kann Fehler machen. Prüfe wichtige Informationen.
+        <div class="composer-info">
+          Safi AI kann Fehler machen. Überprüfe wichtige Informationen.
         </div>
 
       </div>
@@ -279,140 +271,120 @@
   </div>
 
 
-  <!-- =========================
-       ACCOUNT MODAL
-  ========================== -->
-
+  <!-- ACCOUNT MODAL -->
   <div
-    class="modal-overlay"
+    class="modal"
     id="accountModal"
-    hidden
   >
 
-    <div class="modal">
+    <div class="modal-box">
 
-      <button
-        class="modal-close"
-        data-close="accountModal"
-      >
-        ×
-      </button>
+      <div class="modal-header">
 
-      <div class="modal-logo">
-        S
-      </div>
+        <div>
+          <div class="modal-small">
+            SAFI AI
+          </div>
 
-      <h2 id="accountTitle">
-        Bei Safi AI anmelden
-      </h2>
-
-      <p id="accountSubtitle">
-        Speichere deine Unterhaltungen und Einstellungen.
-      </p>
-
-      <form id="accountForm">
-
-        <label>
-          E-Mail
-          <input
-            type="email"
-            id="accountEmail"
-            required
-            autocomplete="email"
-          >
-        </label>
-
-        <label>
-          Passwort
-          <input
-            type="password"
-            id="accountPassword"
-            required
-            minlength="6"
-            autocomplete="current-password"
-          >
-        </label>
+          <h2>Konto</h2>
+        </div>
 
         <button
-          type="submit"
+          class="close-button"
+          data-close="accountModal"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <div id="accountLoggedOut">
+
+        <div class="tabs">
+
+          <button
+            class="tab active"
+            id="loginTab"
+          >
+            Anmelden
+          </button>
+
+          <button
+            class="tab"
+            id="registerTab"
+          >
+            Registrieren
+          </button>
+
+        </div>
+
+        <div class="form-group">
+
+          <label>E-Mail</label>
+
+          <input
+            type="email"
+            id="emailInput"
+            placeholder="name@example.com"
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Passwort</label>
+
+          <input
+            type="password"
+            id="passwordInput"
+            placeholder="Passwort"
+          >
+
+        </div>
+
+        <button
           class="primary-button"
+          id="accountSubmit"
         >
           Anmelden
         </button>
 
-      </form>
+        <div
+          class="form-message"
+          id="accountMessage"
+        ></div>
 
-      <button
-        class="text-button"
-        id="switchAccountMode"
-      >
-        Noch kein Konto? Registrieren
-      </button>
+      </div>
 
       <div
-        class="modal-message"
-        id="accountMessage"
-      ></div>
-
-    </div>
-
-  </div>
-
-
-  <!-- =========================
-       SETTINGS MODAL
-  ========================== -->
-
-  <div
-    class="modal-overlay"
-    id="settingsModal"
-    hidden
-  >
-
-    <div class="modal settings-modal">
-
-      <button
-        class="modal-close"
-        data-close="settingsModal"
+        id="accountLoggedIn"
+        class="hidden"
       >
-        ×
-      </button>
 
-      <h2>Einstellungen</h2>
+        <div class="profile-box">
 
-      <div class="settings-list">
-
-        <div class="setting-row">
-          <div>
-            <strong>Enter zum Senden</strong>
-            <span>Nachrichten mit Enter senden.</span>
+          <div class="profile-avatar">
+            S
           </div>
 
-          <label class="switch">
-            <input
-              type="checkbox"
-              id="enterToSend"
-              checked
-            >
-            <span></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
           <div>
-            <strong>Dark Mode</strong>
-            <span>Schwarz-weißes Safi-AI-Design.</span>
+            <strong id="loggedUserEmail">
+              -
+            </strong>
+
+            <span>
+              Safi AI Konto
+            </span>
           </div>
 
-          <label class="switch">
-            <input
-              type="checkbox"
-              id="darkMode"
-              checked
-            >
-            <span></span>
-          </label>
         </div>
+
+        <button
+          class="secondary-button"
+          id="logoutButton"
+        >
+          Abmelden
+        </button>
 
       </div>
 
@@ -421,11 +393,71 @@
   </div>
 
 
-  <!-- =========================
-       SCRIPT
-  ========================== -->
+  <!-- SETTINGS MODAL -->
+  <div
+    class="modal"
+    id="settingsModal"
+  >
 
-  <script src="script.js"></script>
+    <div class="modal-box">
+
+      <div class="modal-header">
+
+        <div>
+          <div class="modal-small">
+            SAFI AI
+          </div>
+
+          <h2>Einstellungen</h2>
+        </div>
+
+        <button
+          class="close-button"
+          data-close="settingsModal"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <div class="setting">
+
+        <div>
+          <strong>Darstellung</strong>
+          <span>Helles oder dunkles Design</span>
+        </div>
+
+        <button
+          class="toggle-button"
+          id="themeButton"
+        >
+          Dunkel
+        </button>
+
+      </div>
+
+      <div class="setting">
+
+        <div>
+          <strong>Unterhaltungen</strong>
+          <span>Gespeicherte Chats löschen</span>
+        </div>
+
+        <button
+          class="danger-button"
+          id="deleteAllChats"
+        >
+          Löschen
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script src="/script.js"></script>
 
 </body>
 </html>
