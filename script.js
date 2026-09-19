@@ -1,76 +1,71 @@
-const $ = (selector) =>
-  document.querySelector(selector);
+// ================================
+// SAFI AI - SCRIPT
+// ================================
 
-const $$ = (selector) =>
-  document.querySelectorAll(selector);
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+const messages = document.getElementById("messages");
+const welcomeScreen = document.getElementById("welcomeScreen");
+
+const newChatBtn = document.getElementById("newChatBtn");
+const clearChatBtn = document.getElementById("clearChatBtn");
+const chatHistory = document.getElementById("chatHistory");
+
+const attachBtn = document.getElementById("attachBtn");
+const imageBtn = document.getElementById("imageBtn");
+
+const fileInput = document.getElementById("fileInput");
+const imageInput = document.getElementById("imageInput");
+
+const micBtn = document.getElementById("micBtn");
+
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const sidebar = document.getElementById("sidebar");
+
+const accountBtn = document.getElementById("accountBtn");
+const settingsBtn = document.getElementById("settingsBtn");
+
+const accountModal = document.getElementById("accountModal");
+const settingsModal = document.getElementById("settingsModal");
+
+const loginTab = document.getElementById("loginTab");
+const registerTab = document.getElementById("registerTab");
+
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+
+const accountMessage = document.getElementById("accountMessage");
+
+const themeBtn = document.getElementById("themeBtn");
+const storageBtn = document.getElementById("storageBtn");
 
 
-/* =====================================================
-   STATE
-===================================================== */
+// ================================
+// STATE
+// ================================
 
-let chats =
-  JSON.parse(
-    localStorage.getItem("safi_chats") || "[]"
-  );
+let chats = JSON.parse(
+  localStorage.getItem("safi_chats") || "[]"
+);
 
-let currentChatId =
-  localStorage.getItem("safi_current_chat");
+let currentChatId = localStorage.getItem(
+  "safi_current_chat"
+);
 
 let selectedFiles = [];
 
-let isSending = false;
-
 let mediaRecorder = null;
 let audioChunks = [];
-let isRecording = false;
 
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
-
-const chatContent = $("#chatContent");
-const chatHistory = $("#chatHistory");
-const welcome = $("#welcome");
-
-const messageInput = $("#messageInput");
-const sendButton = $("#sendButton");
-
-const fileInput = $("#fileInput");
-const imageInput = $("#imageInput");
-
-const attachments = $("#attachments");
-
-const accountModal = $("#accountModal");
-const settingsModal = $("#settingsModal");
-
-
-/* =====================================================
-   CHAT STORAGE
-===================================================== */
-
-function saveChats() {
-  localStorage.setItem(
-    "safi_chats",
-    JSON.stringify(chats)
-  );
-}
-
-function generateId() {
-  return (
-    Date.now().toString(36) +
-    Math.random()
-      .toString(36)
-      .substring(2, 8)
-  );
-}
+// ================================
+// INITIALISIERUNG
+// ================================
 
 function createChat() {
-
   const chat = {
-    id: generateId(),
-    title: "Neue Unterhaltung",
+    id: Date.now().toString(),
+    title: "Neuer Chat",
     messages: []
   };
 
@@ -78,725 +73,346 @@ function createChat() {
 
   currentChatId = chat.id;
 
+  saveChats();
+  renderChatHistory();
+  renderCurrentChat();
+}
+
+function saveChats() {
   localStorage.setItem(
-    "safi_current_chat",
-    currentChatId
+    "safi_chats",
+    JSON.stringify(chats)
   );
 
-  saveChats();
-
-  renderHistory();
-  renderChat();
-
-  messageInput.focus();
+  localStorage.setItem(
+    "safi_current_chat",
+    currentChatId || ""
+  );
 }
 
 function getCurrentChat() {
-
-  let chat =
-    chats.find(
-      (item) => item.id === currentChatId
-    );
-
-  if (!chat) {
-
-    createChat();
-
-    chat =
-      chats.find(
-        (item) => item.id === currentChatId
-      );
-  }
-
-  return chat;
+  return chats.find(
+    chat => chat.id === currentChatId
+  );
 }
 
 
-/* =====================================================
-   HISTORY
-===================================================== */
+// Wenn noch kein Chat existiert
+if (!chats.length) {
+  createChat();
+} else if (
+  !currentChatId ||
+  !chats.some(chat => chat.id === currentChatId)
+) {
+  currentChatId = chats[0].id;
 
-function renderHistory() {
+  saveChats();
+}
 
+renderChatHistory();
+renderCurrentChat();
+
+
+// ================================
+// CHAT HISTORY
+// ================================
+
+function renderChatHistory() {
   chatHistory.innerHTML = "";
 
-  if (!chats.length) {
-
-    const empty =
-      document.createElement("div");
-
-    empty.className =
-      "chat-history-item";
-
-    empty.textContent =
-      "Noch keine Unterhaltungen";
-
-    empty.style.cursor = "default";
-    empty.style.color = "#666";
-
-    chatHistory.appendChild(empty);
-
-    return;
-  }
-
-  chats.forEach((chat) => {
-
-    const item =
-      document.createElement("div");
+  chats.forEach(chat => {
+    const item = document.createElement("div");
 
     item.className =
-      "chat-history-item";
-
-    if (chat.id === currentChatId) {
-      item.classList.add("active");
-    }
+      "chat-item" +
+      (chat.id === currentChatId ? " active" : "");
 
     item.textContent =
-      chat.title || "Neue Unterhaltung";
+      chat.title || "Neuer Chat";
 
-    item.addEventListener(
-      "click",
-      () => {
+    item.title =
+      chat.title || "Neuer Chat";
 
-        currentChatId = chat.id;
+    item.addEventListener("click", () => {
+      currentChatId = chat.id;
 
-        localStorage.setItem(
-          "safi_current_chat",
-          currentChatId
-        );
+      saveChats();
+      renderChatHistory();
+      renderCurrentChat();
 
-        renderHistory();
-        renderChat();
-
-      }
-    );
+      sidebar.classList.remove("open");
+    });
 
     chatHistory.appendChild(item);
   });
 }
 
 
-/* =====================================================
-   RENDER CHAT
-===================================================== */
+// ================================
+// RENDER CHAT
+// ================================
 
-function renderChat() {
-
+function renderCurrentChat() {
   const chat = getCurrentChat();
 
-  chatContent.innerHTML = "";
+  if (!chat) {
+    createChat();
+    return;
+  }
+
+  messages.innerHTML = "";
 
   if (!chat.messages.length) {
+    welcomeScreen.style.display = "block";
+  } else {
+    welcomeScreen.style.display = "none";
 
-    chatContent.appendChild(
-      createWelcome()
-    );
-
-    return;
-  }
-
-  chat.messages.forEach(
-    (message) => {
-
-      addMessageToDOM(
+    chat.messages.forEach(message => {
+      renderMessage(
         message.role,
-        message.content,
+        message.text,
         false
       );
-
-    }
-  );
+    });
+  }
 
   scrollToBottom();
 }
 
+function renderMessage(role, text, animate = true) {
+  const wrapper = document.createElement("div");
 
-/* =====================================================
-   WELCOME
-===================================================== */
-
-function createWelcome() {
-
-  const div =
-    document.createElement("div");
-
-  div.className = "welcome";
-
-  div.innerHTML = `
-    <div class="welcome-small">
-      INTELLIGENT ASSISTANT
-    </div>
-
-    <h1>
-      Was möchtest<br>
-      du wissen?
-    </h1>
-
-    <p>
-      Schreibe Safi AI eine Nachricht.
-      Du kannst außerdem Bilder, Dateien
-      oder eine Sprachaufnahme hinzufügen.
-    </p>
-
-    <div class="suggestions">
-
-      <button
-        class="suggestion"
-        data-prompt="Erkläre mir dieses Thema einfach und verständlich."
-      >
-        <strong>Etwas erklären</strong>
-        <span>Ein Thema einfach verstehen</span>
-      </button>
-
-      <button
-        class="suggestion"
-        data-prompt="Hilf mir beim Programmieren und erkläre mir den Code Schritt für Schritt."
-      >
-        <strong>Programmieren</strong>
-        <span>Code erstellen oder verstehen</span>
-      </button>
-
-      <button
-        class="suggestion"
-        data-prompt="Hilf mir bei meinen Hausaufgaben und erkläre den Lösungsweg."
-      >
-        <strong>Hausaufgaben</strong>
-        <span>Schritt für Schritt lernen</span>
-      </button>
-
-      <button
-        class="suggestion"
-        data-prompt="Fasse mir die wichtigsten Punkte dieses Themas übersichtlich zusammen."
-      >
-        <strong>Zusammenfassen</strong>
-        <span>Wichtige Informationen kompakt</span>
-      </button>
-
-    </div>
-  `;
-
-  div
-    .querySelectorAll(".suggestion")
-    .forEach((button) => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          messageInput.value =
-            button.dataset.prompt;
-
-          autoResize();
-
-          messageInput.focus();
-
-        }
-      );
-
-    });
-
-  return div;
-}
-
-
-/* =====================================================
-   ADD MESSAGE
-===================================================== */
-
-function addMessageToDOM(
-  role,
-  content,
-  scroll = true
-) {
-
-  const message =
-    document.createElement("div");
-
-  message.className =
+  wrapper.className =
     `message ${role}`;
 
-  const avatar =
-    document.createElement("div");
+  if (!animate) {
+    wrapper.style.animation = "none";
+  }
 
-  avatar.className = "avatar";
+  const avatar = document.createElement("div");
+
+  avatar.className = "message-avatar";
 
   avatar.textContent =
-    role === "user"
-      ? "DU"
-      : "S";
+    role === "user" ? "Du" : "S";
 
-  const body =
-    document.createElement("div");
 
-  body.className = "message-body";
+  const content = document.createElement("div");
 
-  const label =
-    document.createElement("div");
+  content.className = "message-content";
 
-  label.className =
-    "message-label";
+  content.textContent = text;
 
-  label.textContent =
-    role === "user"
-      ? "Du"
-      : "Safi AI";
 
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(content);
+
+  messages.appendChild(wrapper);
+
+  return wrapper;
+}
+
+
+// ================================
+// SEND MESSAGE
+// ================================
+
+async function sendMessage(customText = null) {
   const text =
-    document.createElement("div");
+    customText !== null
+      ? customText.trim()
+      : messageInput.value.trim();
 
-  text.className =
-    "message-text";
-
-  text.textContent = content;
-
-  body.appendChild(label);
-  body.appendChild(text);
-
-  message.appendChild(avatar);
-  message.appendChild(body);
-
-  chatContent.appendChild(message);
-
-  if (scroll) {
-    scrollToBottom();
-  }
-}
-
-
-/* =====================================================
-   TYPING
-===================================================== */
-
-function showTyping() {
-
-  const message =
-    document.createElement("div");
-
-  message.className =
-    "message assistant";
-
-  message.id =
-    "typingMessage";
-
-  message.innerHTML = `
-    <div class="avatar">S</div>
-
-    <div class="message-body">
-
-      <div class="message-label">
-        Safi AI
-      </div>
-
-      <div class="typing">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-
-    </div>
-  `;
-
-  chatContent.appendChild(message);
-
-  scrollToBottom();
-}
-
-function removeTyping() {
-
-  const typing =
-    $("#typingMessage");
-
-  if (typing) {
-    typing.remove();
-  }
-}
-
-
-/* =====================================================
-   SEND MESSAGE
-===================================================== */
-
-async function sendMessage() {
-
-  if (isSending) return;
-
-  const message =
-    messageInput.value.trim();
-
-  if (!message && !selectedFiles.length) {
+  if (!text && selectedFiles.length === 0) {
     return;
   }
 
   const chat = getCurrentChat();
 
-  if (!message && selectedFiles.length) {
-
-    const names =
-      selectedFiles
-        .map((file) => file.name)
-        .join(", ");
-
-    chat.messages.push({
-      role: "user",
-      content: `Datei: ${names}`
-    });
-
-    addMessageToDOM(
-      "user",
-      `Datei: ${names}`
-    );
-
-  } else if (message) {
-
-    chat.messages.push({
-      role: "user",
-      content: message
-    });
-
-    addMessageToDOM(
-      "user",
-      message
-    );
+  if (!chat) {
+    createChat();
+    return;
   }
 
+
+  // Erste Nachricht wird zum Chatnamen
   if (
-    chat.title ===
-    "Neue Unterhaltung"
+    chat.messages.length === 0 &&
+    text
   ) {
-
-    const title =
-      message ||
-      selectedFiles[0]?.name ||
-      "Neue Unterhaltung";
-
     chat.title =
-      title.length > 38
-        ? title.substring(0, 38) + "..."
-        : title;
+      text.length > 35
+        ? text.substring(0, 35) + "..."
+        : text;
+  }
+
+
+  // User-Nachricht speichern
+  if (text) {
+    chat.messages.push({
+      role: "user",
+      text
+    });
   }
 
   saveChats();
-  renderHistory();
 
-  const formData =
-    new FormData();
+  welcomeScreen.style.display = "none";
 
-  formData.append(
-    "message",
-    message
-  );
 
-  /*
-    WICHTIG:
+  if (text) {
+    renderMessage("user", text);
+  }
 
-    Wir senden die bisherige Unterhaltung
-    jedes Mal mit.
 
-    Dadurch verliert Safi AI nach 4–5
-    Fragen nicht plötzlich den Kontext.
-  */
+  messageInput.value = "";
 
-  formData.append(
-    "history",
-    JSON.stringify(
-      chat.messages
-        .slice(-30)
-        .map((item) => ({
-          role: item.role,
-          content: item.content
-        }))
-    )
-  );
+  autoResizeTextarea();
 
-  selectedFiles.forEach(
-    (file) => {
+  renderChatHistory();
 
+  scrollToBottom();
+
+
+  // Typing anzeigen
+  const typing = createTypingIndicator();
+
+  sendBtn.disabled = true;
+
+
+  try {
+    const formData = new FormData();
+
+    formData.append(
+      "message",
+      text
+    );
+
+
+    selectedFiles.forEach(file => {
       formData.append(
         "files",
         file
       );
+    });
 
-    }
-  );
 
-  messageInput.value = "";
-
-  selectedFiles = [];
-
-  renderAttachments();
-
-  autoResize();
-
-  isSending = true;
-
-  sendButton.disabled = true;
-
-  showTyping();
-
-  try {
-
-    const response =
-      await fetch("/chat", {
+    const response = await fetch(
+      "/chat",
+      {
         method: "POST",
         body: formData
-      });
+      }
+    );
 
-    let data;
+
+    let data = null;
 
     try {
-      data =
-        await response.json();
+      data = await response.json();
     } catch {
       throw new Error(
-        "Der Server hat keine gültige Antwort zurückgegeben."
+        "Der Server hat keine gültige Antwort gesendet."
       );
     }
 
-    if (!response.ok || !data.success) {
 
+    if (!response.ok) {
       throw new Error(
-        data.error ||
-        "Safi AI konnte die Anfrage nicht bearbeiten."
+        data?.error ||
+        "Safi AI konnte nicht antworten."
       );
     }
 
-    removeTyping();
 
+    const answer =
+      data.response ||
+      data.text ||
+      data.message;
+
+
+    if (!answer) {
+      throw new Error(
+        "Safi AI hat keine Antwort erhalten."
+      );
+    }
+
+
+    // Antwort speichern
     chat.messages.push({
       role: "assistant",
-      content: data.reply
+      text: answer
     });
 
     saveChats();
 
-    addMessageToDOM(
+
+    // Typing entfernen
+    typing.remove();
+
+
+    // Antwort anzeigen
+    renderMessage(
       "assistant",
-      data.reply
+      answer
     );
+
+    scrollToBottom();
+
 
   } catch (error) {
 
-    removeTyping();
-
-    const errorMessage =
-      `Es ist ein Fehler aufgetreten.\n\n${error.message}`;
-
-    chat.messages.push({
-      role: "assistant",
-      content: errorMessage
-    });
-
-    saveChats();
-
-    addMessageToDOM(
-      "assistant",
-      errorMessage
+    console.error(
+      "Safi AI Fehler:",
+      error
     );
+
+
+    typing.remove();
+
+
+    const errorText =
+      error.message ||
+      "Es ist ein unbekannter Fehler aufgetreten.";
+
+
+    renderMessage(
+      "assistant",
+      "⚠️ " + errorText
+    );
+
 
   } finally {
 
-    isSending = false;
+    selectedFiles = [];
 
-    sendButton.disabled = false;
+    sendBtn.disabled = false;
 
     messageInput.focus();
+
   }
 }
 
 
-/* =====================================================
-   FILES
-===================================================== */
+// ================================
+// SEND BUTTON
+// ================================
 
-function addFiles(files) {
-
-  for (const file of files) {
-
-    if (
-      selectedFiles.length >= 5
-    ) {
-      break;
-    }
-
-    if (
-      file.size >
-      20 * 1024 * 1024
-    ) {
-      alert(
-        `${file.name} ist größer als 20 MB.`
-      );
-
-      continue;
-    }
-
-    selectedFiles.push(file);
+sendBtn.addEventListener(
+  "click",
+  () => {
+    sendMessage();
   }
-
-  renderAttachments();
-}
-
-function renderAttachments() {
-
-  attachments.innerHTML = "";
-
-  selectedFiles.forEach(
-    (file, index) => {
-
-      const item =
-        document.createElement("div");
-
-      item.className =
-        "attachment";
-
-      const name =
-        document.createElement("span");
-
-      name.textContent =
-        file.name;
-
-      const remove =
-        document.createElement("button");
-
-      remove.textContent = "×";
-
-      remove.addEventListener(
-        "click",
-        () => {
-
-          selectedFiles.splice(
-            index,
-            1
-          );
-
-          renderAttachments();
-        }
-      );
-
-      item.appendChild(name);
-      item.appendChild(remove);
-
-      attachments.appendChild(item);
-    }
-  );
-}
-
-
-/* =====================================================
-   MICROPHONE
-===================================================== */
-
-async function toggleRecording() {
-
-  if (isRecording) {
-
-    mediaRecorder.stop();
-
-    return;
-  }
-
-  try {
-
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true
-      });
-
-    audioChunks = [];
-
-    mediaRecorder =
-      new MediaRecorder(stream);
-
-    mediaRecorder.ondataavailable =
-      (event) => {
-
-        if (event.data.size > 0) {
-          audioChunks.push(
-            event.data
-          );
-        }
-      };
-
-    mediaRecorder.onstop =
-      () => {
-
-        const blob =
-          new Blob(
-            audioChunks,
-            {
-              type:
-                mediaRecorder.mimeType ||
-                "audio/webm"
-            }
-          );
-
-        const file =
-          new File(
-            [blob],
-            `sprachaufnahme-${Date.now()}.webm`,
-            {
-              type:
-                blob.type
-            }
-          );
-
-        addFiles([file]);
-
-        stream
-          .getTracks()
-          .forEach(
-            (track) =>
-              track.stop()
-          );
-
-        isRecording = false;
-
-        $("#micButton")
-          .classList
-          .remove("recording");
-
-      };
-
-    mediaRecorder.start();
-
-    isRecording = true;
-
-    $("#micButton")
-      .classList
-      .add("recording");
-
-  } catch {
-
-    alert(
-      "Das Mikrofon konnte nicht aktiviert werden."
-    );
-  }
-}
-
-
-/* =====================================================
-   TEXTAREA
-===================================================== */
-
-function autoResize() {
-
-  messageInput.style.height =
-    "auto";
-
-  messageInput.style.height =
-    Math.min(
-      messageInput.scrollHeight,
-      130
-    ) + "px";
-}
-
-messageInput.addEventListener(
-  "input",
-  autoResize
 );
+
+
+// ================================
+// ENTER SENDEN
+// ================================
 
 messageInput.addEventListener(
   "keydown",
-  (event) => {
+  event => {
 
     if (
       event.key === "Enter" &&
@@ -807,74 +423,223 @@ messageInput.addEventListener(
 
       sendMessage();
     }
+
   }
 );
 
 
-/* =====================================================
-   NEW CHAT
-===================================================== */
+// ================================
+// TEXTAREA AUTO RESIZE
+// ================================
 
-$("#newChatButton")
-  .addEventListener(
-    "click",
-    createChat
-  );
+messageInput.addEventListener(
+  "input",
+  autoResizeTextarea
+);
 
+function autoResizeTextarea() {
 
-/* =====================================================
-   CLEAR CHAT
-===================================================== */
+  messageInput.style.height = "auto";
 
-$("#clearChatButton")
-  .addEventListener(
-    "click",
-    () => {
-
-      const chat =
-        getCurrentChat();
-
-      chat.messages = [];
-
-      chat.title =
-        "Neue Unterhaltung";
-
-      saveChats();
-
-      renderHistory();
-      renderChat();
-
-    }
-  );
+  messageInput.style.height =
+    Math.min(
+      messageInput.scrollHeight,
+      140
+    ) + "px";
+}
 
 
-/* =====================================================
-   FILE BUTTONS
-===================================================== */
+// ================================
+// TYPING INDICATOR
+// ================================
 
-$("#attachButton")
-  .addEventListener(
-    "click",
-    () => fileInput.click()
-  );
+function createTypingIndicator() {
 
-$("#imageButton")
-  .addEventListener(
-    "click",
-    () => imageInput.click()
-  );
+  const wrapper =
+    document.createElement("div");
+
+  wrapper.className =
+    "message assistant";
+
+
+  const avatar =
+    document.createElement("div");
+
+  avatar.className =
+    "message-avatar";
+
+  avatar.textContent = "S";
+
+
+  const content =
+    document.createElement("div");
+
+  content.className =
+    "message-content";
+
+
+  const typing =
+    document.createElement("div");
+
+  typing.className =
+    "typing";
+
+
+  for (let i = 0; i < 3; i++) {
+
+    const dot =
+      document.createElement("span");
+
+    typing.appendChild(dot);
+  }
+
+
+  content.appendChild(typing);
+
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(content);
+
+  messages.appendChild(wrapper);
+
+  scrollToBottom();
+
+  return wrapper;
+}
+
+
+// ================================
+// SCROLL
+// ================================
+
+function scrollToBottom() {
+
+  requestAnimationFrame(() => {
+
+    const chatArea =
+      document.getElementById("chatArea");
+
+    chatArea.scrollTop =
+      chatArea.scrollHeight;
+
+  });
+}
+
+
+// ================================
+// NEUER CHAT
+// ================================
+
+newChatBtn.addEventListener(
+  "click",
+  () => {
+
+    createChat();
+
+    messageInput.focus();
+
+    sidebar.classList.remove("open");
+
+  }
+);
+
+
+// ================================
+// CHAT LEEREN
+// ================================
+
+clearChatBtn.addEventListener(
+  "click",
+  () => {
+
+    const chat = getCurrentChat();
+
+    if (!chat) return;
+
+
+    chat.messages = [];
+
+    chat.title = "Neuer Chat";
+
+    saveChats();
+
+    renderChatHistory();
+
+    renderCurrentChat();
+
+  }
+);
+
+
+// ================================
+// SUGGESTIONS
+// ================================
+
+document
+  .querySelectorAll(".suggestion-card")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        const prompt =
+          button.dataset.prompt || "";
+
+        messageInput.value =
+          prompt;
+
+        autoResizeTextarea();
+
+        sendMessage();
+
+      }
+    );
+
+  });
+
+
+// ================================
+// DATEI UPLOAD
+// ================================
+
+attachBtn.addEventListener(
+  "click",
+  () => {
+    fileInput.click();
+  }
+);
 
 fileInput.addEventListener(
   "change",
   () => {
 
-    addFiles(
-      Array.from(
-        fileInput.files
-      )
+    if (!fileInput.files.length) {
+      return;
+    }
+
+    selectedFiles = [
+      ...selectedFiles,
+      ...Array.from(fileInput.files)
+    ];
+
+    showFileNotice(
+      selectedFiles
     );
 
     fileInput.value = "";
+
+  }
+);
+
+
+// ================================
+// BILD UPLOAD
+// ================================
+
+imageBtn.addEventListener(
+  "click",
+  () => {
+    imageInput.click();
   }
 );
 
@@ -882,397 +647,473 @@ imageInput.addEventListener(
   "change",
   () => {
 
-    addFiles(
-      Array.from(
-        imageInput.files
-      )
+    if (!imageInput.files.length) {
+      return;
+    }
+
+    selectedFiles = [
+      ...selectedFiles,
+      ...Array.from(imageInput.files)
+    ];
+
+    showFileNotice(
+      selectedFiles
     );
 
     imageInput.value = "";
+
   }
 );
 
 
-/* =====================================================
-   SEND
-===================================================== */
+// ================================
+// DATEI ANZEIGEN
+// ================================
 
-sendButton.addEventListener(
+function showFileNotice(files) {
+
+  if (!files.length) return;
+
+  const names =
+    files
+      .map(file => file.name)
+      .join(", ");
+
+
+  messageInput.placeholder =
+    `${files.length} Datei(en) ausgewählt: ${names}`;
+
+}
+
+
+// ================================
+// MIKROFON
+// ================================
+
+micBtn.addEventListener(
   "click",
-  sendMessage
+  async () => {
+
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+
+      alert(
+        "Dein Browser unterstützt keine Sprachaufnahme."
+      );
+
+      return;
+    }
+
+
+    if (mediaRecorder &&
+        mediaRecorder.state === "recording") {
+
+      mediaRecorder.stop();
+
+      return;
+    }
+
+
+    try {
+
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+
+
+      audioChunks = [];
+
+
+      mediaRecorder =
+        new MediaRecorder(stream);
+
+
+      mediaRecorder.ondataavailable =
+        event => {
+
+          if (event.data.size > 0) {
+            audioChunks.push(
+              event.data
+            );
+          }
+
+        };
+
+
+      mediaRecorder.onstop =
+        () => {
+
+          stream
+            .getTracks()
+            .forEach(track =>
+              track.stop()
+            );
+
+
+          const blob =
+            new Blob(
+              audioChunks,
+              {
+                type:
+                  mediaRecorder.mimeType ||
+                  "audio/webm"
+              }
+            );
+
+
+          const file =
+            new File(
+              [blob],
+              "sprachaufnahme.webm",
+              {
+                type:
+                  blob.type
+              }
+            );
+
+
+          selectedFiles.push(file);
+
+          showFileNotice(
+            selectedFiles
+          );
+
+
+          micBtn.textContent = "🎙";
+
+        };
+
+
+      mediaRecorder.start();
+
+      micBtn.textContent = "⏹";
+
+    } catch (error) {
+
+      console.error(
+        "Mikrofon-Fehler:",
+        error
+      );
+
+      alert(
+        "Das Mikrofon konnte nicht aktiviert werden."
+      );
+
+    }
+
+  }
 );
 
 
-/* =====================================================
-   MICROPHONE
-===================================================== */
+// ================================
+// MOBILE SIDEBAR
+// ================================
 
-$("#micButton")
-  .addEventListener(
-    "click",
-    toggleRecording
+mobileMenuBtn.addEventListener(
+  "click",
+  () => {
+
+    sidebar.classList.toggle(
+      "open"
+    );
+
+  }
 );
 
 
-/* =====================================================
-   MODALS
-===================================================== */
+// ================================
+// ACCOUNT MODAL
+// ================================
+
+accountBtn.addEventListener(
+  "click",
+  () => {
+
+    openModal(accountModal);
+
+    sidebar.classList.remove("open");
+
+  }
+);
+
+
+// ================================
+// SETTINGS MODAL
+// ================================
+
+settingsBtn.addEventListener(
+  "click",
+  () => {
+
+    openModal(settingsModal);
+
+    sidebar.classList.remove("open");
+
+  }
+);
+
+
+// ================================
+// MODALS ÖFFNEN / SCHLIESSEN
+// ================================
 
 function openModal(modal) {
-  modal.classList.add("open");
+
+  modal.classList.add("show");
+
 }
 
 function closeModal(modal) {
-  modal.classList.remove("open");
+
+  modal.classList.remove("show");
+
 }
 
-$("#settingsButton")
-  .addEventListener(
-    "click",
-    () => openModal(settingsModal)
-  );
 
-$("#accountButton")
-  .addEventListener(
-    "click",
-    () => openModal(accountModal)
-  );
-
-$$("[data-close]")
-  .forEach((button) => {
+document
+  .querySelectorAll("[data-close]")
+  .forEach(button => {
 
     button.addEventListener(
       "click",
       () => {
 
+        const id =
+          button.dataset.close;
+
         const modal =
-          $("#" +
-            button.dataset.close);
+          document.getElementById(id);
 
-        closeModal(modal);
-
-      }
-    );
-  });
-
-$$(".modal")
-  .forEach((modal) => {
-
-    modal.addEventListener(
-      "click",
-      (event) => {
-
-        if (
-          event.target === modal
-        ) {
+        if (modal) {
           closeModal(modal);
         }
 
       }
     );
+
   });
 
 
-/* =====================================================
-   THEME
-===================================================== */
+document
+  .querySelectorAll(".modal-overlay")
+  .forEach(overlay => {
 
-function updateThemeButton() {
+    overlay.addEventListener(
+      "click",
+      event => {
 
-  $("#themeButton").textContent =
-    document.body.classList.contains("dark")
-      ? "Hell"
-      : "Dunkel";
-}
+        if (
+          event.target === overlay
+        ) {
 
-$("#themeButton")
-  .addEventListener(
-    "click",
-    () => {
+          closeModal(overlay);
 
-      document.body
-        .classList
-        .toggle("dark");
+        }
 
-      localStorage.setItem(
-        "safi_theme",
-        document.body.classList.contains("dark")
-          ? "dark"
-          : "light"
-      );
-
-      updateThemeButton();
-    }
-  );
-
-if (
-  localStorage.getItem(
-    "safi_theme"
-  ) === "dark"
-) {
-  document.body.classList.add("dark");
-}
-
-updateThemeButton();
-
-
-/* =====================================================
-   ACCOUNT
-===================================================== */
-
-let accountMode = "login";
-
-function updateAccountUI() {
-
-  const email =
-    localStorage.getItem(
-      "safi_user_email"
+      }
     );
 
-  if (email) {
+  });
 
-    $("#accountLoggedOut")
-      .classList
-      .add("hidden");
 
-    $("#accountLoggedIn")
-      .classList
-      .remove("hidden");
+// ================================
+// ACCOUNT TABS
+// ================================
 
-    $("#loggedUserEmail")
-      .textContent = email;
+loginTab.addEventListener(
+  "click",
+  () => {
 
-    $("#accountButtonText")
-      .textContent = email;
+    loginTab.classList.add(
+      "active"
+    );
 
-  } else {
+    registerTab.classList.remove(
+      "active"
+    );
 
-    $("#accountLoggedOut")
-      .classList
-      .remove("hidden");
+    loginForm.style.display =
+      "block";
 
-    $("#accountLoggedIn")
-      .classList
-      .add("hidden");
+    registerForm.style.display =
+      "none";
 
-    $("#accountButtonText")
-      .textContent = "Anmelden";
+    accountMessage.textContent =
+      "";
+
   }
-}
+);
 
-$("#loginTab")
-  .addEventListener(
-    "click",
-    () => {
 
-      accountMode = "login";
+registerTab.addEventListener(
+  "click",
+  () => {
 
-      $("#loginTab")
-        .classList
-        .add("active");
+    registerTab.classList.add(
+      "active"
+    );
 
-      $("#registerTab")
-        .classList
-        .remove("active");
+    loginTab.classList.remove(
+      "active"
+    );
 
-      $("#accountSubmit")
-        .textContent = "Anmelden";
+    loginForm.style.display =
+      "none";
+
+    registerForm.style.display =
+      "block";
+
+    accountMessage.textContent =
+      "";
+
+  }
+);
+
+
+// ================================
+// LOGIN
+// ================================
+
+loginForm.addEventListener(
+  "submit",
+  event => {
+
+    event.preventDefault();
+
+    const email =
+      document.getElementById(
+        "loginEmail"
+      ).value.trim();
+
+    accountMessage.textContent =
+      `Konto-Funktion für ${email} wird später mit dem Server verbunden.`;
+
+  }
+);
+
+
+// ================================
+// REGISTER
+// ================================
+
+registerForm.addEventListener(
+  "submit",
+  event => {
+
+    event.preventDefault();
+
+    accountMessage.textContent =
+      "Die Konto-Funktion wird in der nächsten Version mit einer Datenbank verbunden.";
+
+  }
+);
+
+
+// ================================
+// THEME
+// ================================
+
+themeBtn.addEventListener(
+  "click",
+  () => {
+
+    document.body.classList.toggle(
+      "light-theme"
+    );
+
+    if (
+      document.body.classList.contains(
+        "light-theme"
+      )
+    ) {
+
+      themeBtn.textContent =
+        "Hell";
+
+    } else {
+
+      themeBtn.textContent =
+        "Dunkel";
 
     }
-  );
 
-$("#registerTab")
-  .addEventListener(
-    "click",
-    () => {
+  }
+);
 
-      accountMode = "register";
 
-      $("#registerTab")
-        .classList
-        .add("active");
+// ================================
+// STORAGE
+// ================================
 
-      $("#loginTab")
-        .classList
-        .remove("active");
+storageBtn.addEventListener(
+  "click",
+  () => {
 
-      $("#accountSubmit")
-        .textContent = "Konto erstellen";
+    const enabled =
+      localStorage.getItem(
+        "safi_storage_disabled"
+      ) !== "true";
 
-    }
-  );
 
-$("#accountSubmit")
-  .addEventListener(
-    "click",
-    () => {
-
-      const email =
-        $("#emailInput")
-          .value
-          .trim();
-
-      const password =
-        $("#passwordInput")
-          .value;
-
-      if (!email || !password) {
-
-        $("#accountMessage")
-          .textContent =
-          "Bitte E-Mail und Passwort eingeben.";
-
-        return;
-      }
-
-      if (password.length < 4) {
-
-        $("#accountMessage")
-          .textContent =
-          "Das Passwort muss mindestens 4 Zeichen haben.";
-
-        return;
-      }
-
-      /*
-        Lokale Anmeldung:
-        Das Konto bleibt im Browser gespeichert.
-      */
+    if (enabled) {
 
       localStorage.setItem(
-        "safi_user_email",
-        email
-      );
-
-      localStorage.setItem(
-        "safi_user_logged_in",
+        "safi_storage_disabled",
         "true"
       );
 
-      $("#accountMessage")
-        .textContent =
-        "Konto erfolgreich gespeichert.";
+      storageBtn.textContent =
+        "Aus";
 
-      updateAccountUI();
+    } else {
 
-      setTimeout(
-        () => closeModal(accountModal),
-        600
-      );
-    }
-  );
-
-$("#logoutButton")
-  .addEventListener(
-    "click",
-    () => {
-
-      localStorage.removeItem(
-        "safi_user_email"
+      localStorage.setItem(
+        "safi_storage_disabled",
+        "false"
       );
 
-      localStorage.removeItem(
-        "safi_user_logged_in"
-      );
-
-      updateAccountUI();
+      storageBtn.textContent =
+        "Aktiv";
 
     }
-  );
 
-updateAccountUI();
+  }
+);
 
 
-/* =====================================================
-   DELETE ALL CHATS
-===================================================== */
+// ================================
+// ESC SCHLIESST MODALS
+// ================================
 
-$("#deleteAllChats")
-  .addEventListener(
-    "click",
-    () => {
+document.addEventListener(
+  "keydown",
+  event => {
 
-      if (
-        !confirm(
-          "Wirklich alle Unterhaltungen löschen?"
-        )
-      ) {
-        return;
-      }
-
-      chats = [];
-
-      currentChatId = null;
-
-      localStorage.removeItem(
-        "safi_chats"
-      );
-
-      localStorage.removeItem(
-        "safi_current_chat"
-      );
-
-      createChat();
-
-      closeModal(settingsModal);
+    if (event.key !== "Escape") {
+      return;
     }
-  );
 
+    document
+      .querySelectorAll(".modal-overlay.show")
+      .forEach(modal => {
 
-/* =====================================================
-   MOBILE MENU
-===================================================== */
+        closeModal(modal);
 
-$("#mobileMenu")
-  .addEventListener(
-    "click",
-    () => {
-
-      $("#sidebar")
-        .classList
-        .toggle("open");
-
-    }
-  );
-
-
-/* =====================================================
-   SCROLL
-===================================================== */
-
-function scrollToBottom() {
-
-  const container =
-    $("#chatContainer");
-
-  setTimeout(
-    () => {
-
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: "smooth"
       });
 
-    },
-    20
-  );
-}
-
-
-/* =====================================================
-   START
-===================================================== */
-
-if (!chats.length) {
-
-  createChat();
-
-} else {
-
-  if (!currentChatId) {
-    currentChatId = chats[0].id;
   }
+);
 
-  renderHistory();
-  renderChat();
-}
+
+// ================================
+// START
+// ================================
+
+messageInput.focus();
+
+console.log(
+  "🚀 Safi AI Frontend gestartet"
+);
