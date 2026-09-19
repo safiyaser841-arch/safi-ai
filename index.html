@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Safi AI</title>
+
+  <meta
+    name="description"
+    content="Safi AI – dein moderner KI-Assistent"
+  >
+
   <link rel="stylesheet" href="/style.css">
 </head>
 
@@ -11,140 +18,299 @@
 
   <div class="app">
 
-    <!-- SIDEBAR -->
+    <!-- ================= SIDEBAR ================= -->
+
     <aside class="sidebar" id="sidebar">
 
       <div class="brand">
-        <div class="logo">S</div>
-        <div>
-          <h1>Safi AI</h1>
-          <span>Connected Intelligence</span>
+
+        <div class="brand-logo">
+          S
         </div>
+
+        <div class="brand-text">
+          <div class="brand-name">
+            Safi AI
+          </div>
+
+          <div class="brand-subtitle">
+            Intelligent Assistant
+          </div>
+        </div>
+
       </div>
 
-      <button class="new-chat" id="newChatBtn">
-        <span>＋</span>
-        Neuer Chat
+
+      <button
+        class="new-chat-btn"
+        id="newChatBtn"
+        type="button"
+      >
+        <span class="plus">＋</span>
+        <span>Neuer Chat</span>
       </button>
 
-      <div class="sidebar-title">Chats</div>
 
-      <div id="chatHistory" class="chat-history"></div>
+      <div class="sidebar-heading">
+        Deine Chats
+      </div>
+
+
+      <div
+        class="chat-history"
+        id="chatHistory"
+      ></div>
+
 
       <div class="sidebar-bottom">
 
-        <button class="side-button" id="accountBtn">
-          <span>👤</span>
-          Konto
+        <button
+          class="sidebar-btn"
+          id="accountBtn"
+          type="button"
+        >
+          <span class="sidebar-icon">👤</span>
+          <span>Konto</span>
         </button>
 
-        <button class="side-button" id="settingsBtn">
-          <span>⚙️</span>
-          Einstellungen
+
+        <button
+          class="sidebar-btn"
+          id="settingsBtn"
+          type="button"
+        >
+          <span class="sidebar-icon">⚙️</span>
+          <span>Einstellungen</span>
         </button>
 
       </div>
+
     </aside>
 
-    <!-- MAIN -->
+
+    <!-- ================= MAIN ================= -->
+
     <main class="main">
 
       <!-- TOPBAR -->
+
       <header class="topbar">
 
-        <button class="mobile-menu" id="mobileMenuBtn">
+        <button
+          class="mobile-menu"
+          id="mobileMenuBtn"
+          type="button"
+          aria-label="Menü"
+        >
           ☰
         </button>
 
-        <div class="top-title">
-          <strong>Safi AI</strong>
-          <span class="online">
-            <i></i>
+
+        <div class="topbar-left">
+
+          <div class="topbar-title">
+            Safi AI
+          </div>
+
+          <div class="status">
+            <span class="status-dot"></span>
             Online
-          </span>
+          </div>
+
         </div>
 
-        <button class="clear-btn" id="clearChatBtn">
+
+        <button
+          class="clear-chat"
+          id="clearChatBtn"
+          type="button"
+        >
           Chat leeren
         </button>
 
       </header>
 
-      <!-- CHAT -->
-      <section class="chat-area">
+
+      <!-- ================= CHAT ================= -->
+
+      <section
+        class="chat-area"
+        id="chatArea"
+      >
 
         <!-- WELCOME -->
-        <div id="welcomeScreen" class="welcome">
+
+        <div
+          class="welcome"
+          id="welcomeScreen"
+        >
 
           <div class="welcome-logo">
             S
           </div>
 
-          <h2>
-            Willkommen bei <span>Safi AI</span>
-          </h2>
 
-          <p>
-            Dein intelligenter KI-Assistent für Lernen,
-            Programmieren, Ideen und vieles mehr.
+          <h1>
+            Hallo, ich bin
+            <span>Safi AI</span>
+          </h1>
+
+
+          <p class="welcome-text">
+            Dein intelligenter KI-Assistent.
+            Frag mich etwas, lerne, programmiere
+            oder entwickle neue Ideen.
           </p>
+
 
           <div class="suggestions">
 
-            <button class="suggestion" data-prompt="Hilf mir beim Lernen und erkläre mir ein Thema einfach.">
-              <div class="suggestion-icon">📚</div>
-              <div>
-                <strong>Lernen</strong>
-                <span>Erkläre mir ein Thema</span>
+            <button
+              class="suggestion-card"
+              data-prompt="Erkläre mir ein Thema so, dass ich es leicht verstehen kann."
+              type="button"
+            >
+
+              <div class="suggestion-icon">
+                📚
               </div>
+
+              <div class="suggestion-content">
+
+                <strong>
+                  Lernen
+                </strong>
+
+                <span>
+                  Ein Thema einfach erklären
+                </span>
+
+              </div>
+
             </button>
 
-            <button class="suggestion" data-prompt="Hilf mir beim Programmieren.">
-              <div class="suggestion-icon">💻</div>
-              <div>
-                <strong>Programmieren</strong>
-                <span>Schreibe oder verbessere Code</span>
+
+            <button
+              class="suggestion-card"
+              data-prompt="Hilf mir beim Programmieren. Zeige mir eine gute Lösung und erkläre den Code."
+              type="button"
+            >
+
+              <div class="suggestion-icon">
+                💻
               </div>
+
+              <div class="suggestion-content">
+
+                <strong>
+                  Programmieren
+                </strong>
+
+                <span>
+                  Code schreiben und verbessern
+                </span>
+
+              </div>
+
             </button>
 
-            <button class="suggestion" data-prompt="Gib mir kreative Ideen für ein Projekt.">
-              <div class="suggestion-icon">💡</div>
-              <div>
-                <strong>Ideen</strong>
-                <span>Entwickle neue Ideen</span>
+
+            <button
+              class="suggestion-card"
+              data-prompt="Gib mir einige kreative Ideen für ein interessantes Projekt."
+              type="button"
+            >
+
+              <div class="suggestion-icon">
+                💡
               </div>
+
+              <div class="suggestion-content">
+
+                <strong>
+                  Ideen
+                </strong>
+
+                <span>
+                  Neue Projekte entwickeln
+                </span>
+
+              </div>
+
             </button>
 
-            <button class="suggestion" data-prompt="Hilf mir einen guten Text zu schreiben.">
-              <div class="suggestion-icon">✍️</div>
-              <div>
-                <strong>Schreiben</strong>
-                <span>Erstelle oder verbessere Texte</span>
+
+            <button
+              class="suggestion-card"
+              data-prompt="Hilf mir, einen guten Text zu schreiben."
+              type="button"
+            >
+
+              <div class="suggestion-icon">
+                ✍️
               </div>
+
+              <div class="suggestion-content">
+
+                <strong>
+                  Schreiben
+                </strong>
+
+                <span>
+                  Texte erstellen und verbessern
+                </span>
+
+              </div>
+
             </button>
 
           </div>
+
         </div>
 
+
         <!-- MESSAGES -->
-        <div id="messages" class="messages"></div>
+
+        <div
+          class="messages"
+          id="messages"
+        ></div>
 
       </section>
 
-      <!-- COMPOSER -->
-      <div class="composer-wrapper">
+
+      <!-- ================= COMPOSER ================= -->
+
+      <div class="composer-area">
 
         <div class="composer">
 
-          <button class="tool-btn" id="attachBtn" title="Datei">
+          <button
+            class="composer-btn"
+            id="attachBtn"
+            type="button"
+            title="Datei hinzufügen"
+          >
             ＋
           </button>
+
 
           <input
             type="file"
             id="fileInput"
             hidden
           >
+
+
+          <button
+            class="composer-btn"
+            id="imageBtn"
+            type="button"
+            title="Bild hinzufügen"
+          >
+            ▧
+          </button>
+
 
           <input
             type="file"
@@ -153,65 +319,114 @@
             hidden
           >
 
-          <button class="tool-btn" id="imageBtn" title="Bild">
-            ▧
-          </button>
 
           <textarea
             id="messageInput"
-            rows="1"
             placeholder="Nachricht an Safi AI..."
+            rows="1"
+            autocomplete="off"
           ></textarea>
 
-          <button class="tool-btn mic-btn" id="micBtn" title="Sprache">
+
+          <button
+            class="composer-btn microphone"
+            id="micBtn"
+            type="button"
+            title="Sprachaufnahme"
+          >
             🎙
           </button>
 
-          <button class="send-btn" id="sendBtn" title="Senden">
+
+          <button
+            class="send-btn"
+            id="sendBtn"
+            type="button"
+            title="Senden"
+          >
             ➤
           </button>
 
         </div>
 
-        <div class="composer-info">
+
+        <div class="composer-note">
           Safi AI kann Fehler machen. Überprüfe wichtige Informationen.
         </div>
 
       </div>
 
     </main>
+
   </div>
 
 
-  <!-- ACCOUNT MODAL -->
-  <div class="modal-overlay" id="accountModal">
+  <!-- ================= ACCOUNT MODAL ================= -->
+
+  <div
+    class="modal-overlay"
+    id="accountModal"
+  >
 
     <div class="modal">
 
-      <button class="modal-close" data-close="accountModal">
+      <button
+        class="modal-close"
+        data-close="accountModal"
+        type="button"
+      >
         ×
       </button>
 
-      <div class="modal-icon">👤</div>
 
-      <h2>Konto</h2>
+      <div class="modal-logo">
+        👤
+      </div>
+
+
+      <h2>
+        Dein Konto
+      </h2>
+
+
       <p class="modal-description">
         Melde dich an oder erstelle ein neues Konto.
       </p>
 
+
       <div class="account-tabs">
-        <button class="active" id="loginTab">Anmelden</button>
-        <button id="registerTab">Registrieren</button>
+
+        <button
+          class="account-tab active"
+          id="loginTab"
+          type="button"
+        >
+          Anmelden
+        </button>
+
+
+        <button
+          class="account-tab"
+          id="registerTab"
+          type="button"
+        >
+          Registrieren
+        </button>
+
       </div>
+
+
+      <!-- LOGIN -->
 
       <form id="loginForm">
 
         <input
           type="email"
           id="loginEmail"
-          placeholder="E-Mail"
+          placeholder="E-Mail-Adresse"
           required
         >
+
 
         <input
           type="password"
@@ -220,82 +435,144 @@
           required
         >
 
-        <button type="submit" class="primary-btn">
+
+        <button
+          class="primary-btn"
+          type="submit"
+        >
           Anmelden
         </button>
 
       </form>
 
-      <form id="registerForm" style="display:none;">
+
+      <!-- REGISTER -->
+
+      <form
+        id="registerForm"
+        style="display:none;"
+      >
 
         <input
           type="email"
           id="registerEmail"
-          placeholder="E-Mail"
+          placeholder="E-Mail-Adresse"
           required
         >
+
 
         <input
           type="password"
           id="registerPassword"
           placeholder="Passwort"
+          minlength="6"
           required
         >
 
-        <button type="submit" class="primary-btn">
+
+        <button
+          class="primary-btn"
+          type="submit"
+        >
           Konto erstellen
         </button>
 
       </form>
 
-      <div id="accountMessage"></div>
+
+      <div
+        id="accountMessage"
+        class="account-message"
+      ></div>
 
     </div>
+
   </div>
 
 
-  <!-- SETTINGS MODAL -->
-  <div class="modal-overlay" id="settingsModal">
+  <!-- ================= SETTINGS MODAL ================= -->
+
+  <div
+    class="modal-overlay"
+    id="settingsModal"
+  >
 
     <div class="modal">
 
-      <button class="modal-close" data-close="settingsModal">
+      <button
+        class="modal-close"
+        data-close="settingsModal"
+        type="button"
+      >
         ×
       </button>
 
-      <div class="modal-icon">⚙️</div>
 
-      <h2>Einstellungen</h2>
-
-      <div class="setting">
-
-        <div>
-          <strong>Design</strong>
-          <span>Darstellung von Safi AI</span>
-        </div>
-
-        <button id="themeBtn">
-          Dunkel
-        </button>
-
+      <div class="modal-logo">
+        ⚙️
       </div>
 
-      <div class="setting">
 
-        <div>
-          <strong>Chat-Speicher</strong>
-          <span>Chats werden lokal gespeichert</span>
+      <h2>
+        Einstellungen
+      </h2>
+
+
+      <div class="settings-list">
+
+        <div class="setting-row">
+
+          <div>
+            <strong>
+              Design
+            </strong>
+
+            <span>
+              Dunkles Safi-AI-Design
+            </span>
+          </div>
+
+
+          <button
+            id="themeBtn"
+            type="button"
+          >
+            Dunkel
+          </button>
+
         </div>
 
-        <button id="storageBtn">
-          Aktiv
-        </button>
+
+        <div class="setting-row">
+
+          <div>
+            <strong>
+              Lokaler Speicher
+            </strong>
+
+            <span>
+              Deine Chats werden im Browser gespeichert
+            </span>
+          </div>
+
+
+          <button
+            id="storageBtn"
+            type="button"
+          >
+            Aktiv
+          </button>
+
+        </div>
 
       </div>
 
     </div>
+
   </div>
 
+
+  <!-- ================= SCRIPT ================= -->
 
   <script src="/script.js"></script>
 
