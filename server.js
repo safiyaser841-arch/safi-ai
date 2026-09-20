@@ -11,6 +11,35 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+// ===============================
+// MIDDLEWARE
+// ===============================
+
+app.use(cors());
+
+app.use(
+  express.json({
+    limit: "10mb"
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10mb"
+  })
+);
+
+// ===============================
+// STATIC FILES
+// ===============================
+
+app.use(express.static(__dirname));
+
+// ===============================
+// FILE UPLOAD
+// ===============================
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -18,154 +47,170 @@ const upload = multer({
   }
 });
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
-});
-
-app.use(cors());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
-// Frontend aus demselben Ordner ausliefern
-app.use(express.static(__dirname));
-
-
-// ================================
+// ===============================
 // STATUS
-// ================================
+// ===============================
 
 app.get("/status", (req, res) => {
   res.json({
     ok: true,
     online: true,
     app: "Safi AI",
-    version: "3.0.0"
+    version: "4.0.0"
   });
 });
 
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
-    game: "Safi AI"
+    service: "Safi AI"
   });
 });
 
-
-// ================================
+// ===============================
 // CHAT
-// ================================
+// ===============================
 
 app.post("/chat", upload.array("files", 5), async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      console.error("GEMINI_API_KEY fehlt.");
+
       return res.status(500).json({
-        error: "GEMINI_API_KEY fehlt auf dem Server."
+        error: "GEMINI_API_KEY fehlt auf Render."
       });
     }
 
     const message = String(req.body.message || "").trim();
 
-    if (!message && (!req.files || req.files.length === 0)) {
+    const files = req.files || [];
+
+    if (!message && files.length === 0) {
       return res.status(400).json({
         error: "Bitte schreibe eine Nachricht."
       });
     }
 
+    const ai = new GoogleGenAI({
+      apiKey: apiKey
+    });
+
     const parts = [];
 
+    // Nachricht
     if (message) {
       parts.push({
         text: message
       });
     }
 
-    // Dateien / Bilder an Gemini weitergeben
-    if (req.files && req.files.length > 0) {
-      for (const file of req.files) {
-        const mimeType = file.mimetype || "application/octet-stream";
-
-        parts.push({
-          inlineData: {
-            mimeType,
-            data: file.buffer.toString("base64")
-          }
-        });
-      }
+    // Dateien / Bilder
+    for (const file of files) {
+      parts.push({
+        inlineData: {
+          mimeType: file.mimetype || "application/octet-stream",
+          data: file.buffer.toString("base64")
+        }
+      });
     }
 
     const systemInstruction = `
-Du bist Safi AI, ein moderner, hilfreicher KI-Assistent.
+Du bist Safi AI, ein moderner persönlicher KI-Assistent.
 
-Antworte auf Deutsch, wenn der Nutzer Deutsch schreibt.
-Antworte auf Englisch, wenn der Nutzer Englisch schreibt.
+Dein Name ist Safi AI.
+
+Wenn der Nutzer Deutsch schreibt, antworte auf Deutsch.
+Wenn der Nutzer Englisch schreibt, antworte auf Englisch.
 
 Sei freundlich, direkt und verständlich.
-Bei Programmierfragen darfst du vollständigen Code liefern.
-Wenn der Nutzer etwas nicht versteht, erkläre es einfach Schritt für Schritt.
 
-Du bist nicht ChatGPT. Du bist Safi AI.
+Bei Programmierfragen darfst du vollständigen Code schreiben.
+
+Wenn der Nutzer Bilder oder Dateien hochlädt,
+analysiere sie so gut wie möglich.
+
+Wenn etwas unklar ist, sage ehrlich, dass es unklar ist.
+
+Du sollst nicht behaupten, etwas gemacht zu haben,
+wenn du es nicht wirklich gemacht hast.
+
+Du bist Safi AI.
 `;
 
     let lastError = null;
 
-    // Mehrere Versuche verhindern zufällige Fehler bei kurzzeitigen
-    // Server-/API-Problemen.
+    // Bis zu 3 Versuche
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        const response = await ai.models.generateContent({
+        console.log(
+          `Safi AI: Anfrage wird verarbeitet (${attempt}/3)`
+        );
+
+        const result = await ai.models.generateContent({
           model: "gemini-2.5-flash",
+
           contents: [
             {
               role: "user",
-              parts
+              parts: parts
             }
           ],
+
           config: {
-            systemInstruction
+            systemInstruction: systemInstruction
           }
         });
 
-        const text =
-          response.text ||
-          response.candidates?.[0]?.content?.parts
-            ?.map(part => part.text || "")
+        const answer =
+          result.text ||
+          result.candidates?.[0]?.content?.parts
+            ?.map((part) => part.text || "")
             .join("") ||
           "";
 
-        if (!text.trim()) {
-          throw new Error("Gemini hat keine Antwort zurückgegeben.");
+        if (!answer.trim()) {
+          throw new Error(
+            "Gemini hat keine Antwort zurückgegeben."
+          );
         }
+
+        console.log("Safi AI: Antwort erfolgreich.");
 
         return res.json({
           ok: true,
-          response: text
+          response: answer
         });
 
       } catch (error) {
         lastError = error;
 
         console.error(
-          `Gemini-Versuch ${attempt}/3 fehlgeschlagen:`,
+          `Gemini Fehler ${attempt}/3:`,
           error?.message || error
         );
 
         if (attempt < 3) {
-          await new Promise(resolve =>
-            setTimeout(resolve, 1000 * attempt)
-          );
+          await new Promise((resolve) => {
+            setTimeout(resolve, attempt * 1000);
+          });
         }
       }
     }
 
-    console.error("Gemini endgültig fehlgeschlagen:", lastError);
+    console.error(
+      "Safi AI: Alle Gemini-Versuche fehlgeschlagen.",
+      lastError
+    );
 
     return res.status(503).json({
       error:
-        "Safi AI konnte gerade keine Verbindung zur KI herstellen. Bitte versuche es gleich noch einmal."
+        "Safi AI konnte die KI gerade nicht erreichen. Bitte versuche es erneut."
     });
 
   } catch (error) {
-    console.error("Chat-Fehler:", error);
+    console.error("Chat Server Fehler:", error);
 
     return res.status(500).json({
       error: "Interner Serverfehler."
@@ -173,21 +218,24 @@ Du bist nicht ChatGPT. Du bist Safi AI.
   }
 });
 
+// ===============================
+// 404 / FRONTEND FALLBACK
+// ===============================
 
-// ================================
-// FALLBACK FÜR FRONTEND
-// ================================
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+app.use((req, res) => {
+  res.sendFile(
+    path.join(__dirname, "index.html")
+  );
 });
 
-
-// ================================
+// ===============================
 // SERVER START
-// ================================
+// ===============================
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Safi AI läuft auf Port ${PORT}`);
-  console.log("🤖 Gemini API ist verbunden.");
+  console.log("--------------------------------");
+  console.log("🚀 Safi AI Server gestartet");
+  console.log(`🌐 Port: ${PORT}`);
+  console.log("🤖 Gemini API bereit");
+  console.log("--------------------------------");
 });
