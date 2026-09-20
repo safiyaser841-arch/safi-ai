@@ -1,7 +1,7 @@
 {
   "name": "safi-ai",
-  "version": "3.0.0",
-  "description": "Safi AI - persönlicher KI-Assistent",
+  "version": "5.0.0",
+  "description": "Safi AI",
   "type": "module",
   "main": "server.js",
   "scripts": {
